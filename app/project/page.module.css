@@ -1,0 +1,66 @@
+.projectList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.projectItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  border-top: 1px solid #000;
+  padding-top: 0.75rem;
+}
+
+.projectInfoLink,
+.projectImages {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.projectInfoLink {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+
+.projectImages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.projectImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.projectInfo h3,
+.projectInfo h6 {
+  margin: 0;
+}
+
+.projectMetaLine {
+  margin-top: 0.25rem;
+  font-weight: 300;
+}
+
+.projectSummary {
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .projectItem {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .projectInfoLink,
+  .projectImages {
+    width: 100%;
+  }
+}

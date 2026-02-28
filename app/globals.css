@@ -1,26 +1,252 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+footer h5,
+footer h6 {
+  margin: 0;
+}
+
+footer h6 {
+  font-weight: 300;
+}
+
+main {
+  padding-inline: clamp(1rem, 4vw, 4rem);
+}
+
+.hero {
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 10vw, 9rem);
+  line-height: 1;
+  margin: 0.2em 0;
+}
+
+.hero-title-strong {
+  color: #000;
+}
+
+.hero-title-muted {
+  color: #b6b6b6;
+}
+
+.hero-news-image {
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 32 / 9;
+  background: linear-gradient(135deg, #efefef, #dcdcdc);
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #666;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+.hero-news-image::before {
+  content: "Image Placeholder";
+  letter-spacing: 0.04em;
+}
+
+.news-summary-item-image {
+  width: 100%;
+  max-width: 210px;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, #efefef, #dcdcdc);
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #666;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.news-summary-item-image::before {
+  content: "News Image";
+  letter-spacing: 0.04em;
+}
+
+.news-summary-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.news-summary-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.news-summary-item-content {
+  flex: 1 1 auto;
+}
+
+.news-summary-item-content h3,
+.news-summary-item-content h6 {
+  margin: 0;
+}
+
+.news-summary-item-content h6 {
+  margin-top: 0.4rem;
+}
+
+.news-summary-item-content hr {
+  margin-top: 0.9rem;
+}
+
+.member-item-image {
+  width: 60px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #efefef, #dcdcdc);
+  border: 1px solid #cfcfcf;
+  display: grid;
+  place-items: center;
+  color: #666;
+  font-size: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.member-item-image::before {
+  content: "Profile";
+  letter-spacing: 0.04em;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.member-item-name h3,
+.member-item-name h6 {
+  margin: 0;
+}
+
+.member-item-name h6 {
+  margin-top: 0.3rem;
+}
+
+.home-sub-nav ul {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.home-sub-nav a {
+  display: inline-block;
+  color: #000;
+  text-decoration: none;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.home-sub-nav a:hover {
+  background: #000;
+  color: #fff;
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 1rem 1.5rem;
+}
+
+.main-nav a {
+  color: #000;
+  text-decoration: none;
+}
+
+.main-nav a:not(.brand) {
+  position: relative;
+  padding-left: 0.9rem;
+}
+
+.main-nav a:not(.brand)::before {
+  content: "■";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.main-nav a:not(.brand):hover::before,
+.main-nav a:not(.brand).is-active::before {
+  opacity: 1;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.logo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.hero-description-sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12rem;
+}
+
+.hero-description-sub .left,
+.hero-description-sub .right {
+  flex: 1 1 0;
+}
+
+.hero-description-sub .right h6 {
+  font-weight: 300;
+}
+
+.contact {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8rem;
+}
+
+.contact .left,
+.contact .right {
+  flex: 1 1 0;
+}
+
+.contact h6 {
+  font-weight: 300;
+}
+
+@media (max-width: 768px) {
+  .hero-description-sub,
+  .contact,
+  .news-summary-list li {
+    flex-direction: column;
+  }
 }

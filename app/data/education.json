@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "category": "concept-ideation",
+    "title": "컨셉 발굴 스튜디오",
+    "author": "A2F Design Lab",
+    "image": "/news-sample.png"
+  },
+  {
+    "id": 2,
+    "category": "design-thinking-workshop",
+    "title": "디자인씽킹 워크샵 A",
+    "author": "김서희",
+    "image": "/news-sample.png"
+  },
+  {
+    "id": 3,
+    "category": "bx-design-basics",
+    "title": "BX 아이덴티티 기초 프로젝트",
+    "author": "이준호",
+    "image": "/news-sample.png"
+  },
+  {
+    "id": 4,
+    "category": "ui-design-guide",
+    "title": "UI 가이드라인 제작 실습",
+    "author": "박지은",
+    "image": "/news-sample.png"
+  },
+  {
+    "id": 5,
+    "category": "bx-media",
+    "title": "BX 미디어 캠페인 기획",
+    "author": "최민서",
+    "image": "/news-sample.png"
+  },
+  {
+    "id": 6,
+    "category": "dc-graduation-exhibition",
+    "title": "DC 졸업전시 큐레이션 프로젝트",
+    "author": "홍길동",
+    "image": "/news-sample.png"
+  },
+  {
+    "id": 7,
+    "category": "concept-ideation",
+    "title": "muji",
+    "author": "김누구",
+    "image": "/news-sample.png"
+  },{
+    "id": 8,
+    "category": "concept-ideation",
+    "title": "muji2",
+    "author": "이누구",
+    "image": "/news-sample.png"
+  }
+]
