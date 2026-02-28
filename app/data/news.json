@@ -12,7 +12,7 @@
       {
         "type": "image",
         "description": "탁지원,IR 발표현장",
-        "src": "/news-sample.png"
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/news/2025/2025-11-30-poster.jpeg"
       }
     ]
   },
@@ -29,7 +29,7 @@
       {
         "type": "image",
         "description": "김서희, AI 기반 창작 지원 도구의 발전 방향 모색",
-        "src": "/news-sample.png"
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/news/2026/2026-02-17-presentation.jpeg"
       },
       {
         "type": "paragraph",
@@ -38,7 +38,7 @@
       {
         "type": "image",
         "description": "이준호, 생성형 AI 디자인 프로세스 발표",
-        "src": "/news-sample.png"
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/news/2026/2026-02-17-presentation.jpeg"
       }
     ]
   },
@@ -55,7 +55,7 @@
       {
         "type": "image",
         "description": "수업혁신 지역현안 해결 공모전 시상식 장면",
-        "src": "/news-sample.png"
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/news/2026/2026-02-03-award.jpeg"
       },
       {
         "type": "paragraph",
@@ -76,7 +76,7 @@
       {
         "type":"image",
         "description":"School of computing & data science, 홍콩대학",
-        "src": "/news-sample.png"
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/news/2026/2026-02-17-presentation.jpeg"
       }
     ]
   }

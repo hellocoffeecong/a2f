@@ -7,19 +7,19 @@
     "summary": "생성형 AI를 공동 사고 파트너로 활용해 문제 정의부터 시각화까지 수행한 프로젝트.",
     "images": [
       {
-        "src": "/news-sample.png",
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2025/2025-design01.jpeg",
         "alt": "AI Co-thinking project image 1"
       },
       {
-        "src": "/news-sample.png",
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2026-design02.jpeg",
         "alt": "AI Co-thinking project image 2"
       },
       {
-        "src": "/news-sample.png",
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2025/2025-design01.jpeg",
         "alt": "AI Co-thinking project image 3"
       },
       {
-        "src": "/news-sample.png",
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2026-design02.jpeg",
         "alt": "AI Co-thinking project image 4"
       }
     ]

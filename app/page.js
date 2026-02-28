@@ -1,5 +1,5 @@
-import Image from "next/image";
 import newsData from "./data/news.json";
+import membersData from "./data/members.json";
 
 function getLatestNewsItems(items, count = 3) {
   return [...items]
@@ -12,8 +12,21 @@ function getFirstParagraph(blocks = []) {
   return paragraph ? paragraph.text : "";
 }
 
+function getFirstImage(blocks = []) {
+  const image = blocks.find((block) => block.type === "image" && block.src);
+  return image || null;
+}
+
+function normalizeList(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string" && value.trim()) return [value];
+  return [];
+}
+
 export default function Home() {
   const latestNews = getLatestNewsItems(newsData, 3);
+  const facultyMembers = membersData.faculty || [];
+  const studentMembers = membersData.students || [];
 
   return (
     <main>
@@ -83,86 +96,118 @@ export default function Home() {
       <section className="news-summary-list" id="news">
         <h2>Check out The news from A2F.</h2>
         <ul>
-          {latestNews.map((item) => (
-            <li key={item.id}>
-              <div className="news-summary-item-image"></div>
-              <div className="news-summary-item-content">
-                <h3>{item.title}</h3>
-                <h5>{item.subtitle}</h5>
-                <h6>{item.date}</h6>
-              </div>
-              <hr/>
-            </li>
-          ))}
+          {latestNews.map((item) => {
+            const firstImage = getFirstImage(item.contentBlocks);
+
+            return (
+              <li key={item.id}>
+                {firstImage ? (
+                  <img
+                    className="news-summary-item-image"
+                    src={firstImage.src}
+                    alt={firstImage.description || item.title}
+                  />
+                ) : (
+                  <div className="news-summary-item-image news-summary-item-image-placeholder"></div>
+                )}
+                <div className="news-summary-item-content">
+                  <h3>{item.title}</h3>
+                  <h5>{item.subtitle}</h5>
+                  <h6>{item.date}</h6>
+                </div>
+                <hr/>
+              </li>
+            );
+          })}
         </ul>
       </section>
       <hr/>
       <section className="members" id="members">
-      <h2>Faculty</h2>
-      <div className="member-list">
-       <div className="member-item">
-        <div className="member-item-image"></div>
-        <div className="member-item-name">
-        <h3>Name</h3>
-        <h6>English Name</h6>
-        </div>
-        </div>
-        <div className="faculty-quote">
-        <h3>"I will study hard to make a good design so that I can give people a good experience.</h3>
-        </div>
-        
-        <div className="profile-info">
-          <h5>Education</h5>
-          <ul>
-            <li>(BA)</li>
-            <li>(MA)</li>
-            <li>(PhD)</li>
-          </ul>
-          <h5>Experience</h5>
-          <ul>
-            <li>웅진씽크빅 편집개발본부 전집디자인팀 연구원</li>
-            <li>부산디자인센터 동남권디자인 지원사업 평가위원</li>
-            <li>Planning Works Studio 디렉터</li>
-            <li>(주)The Party 디자인팀장</li>
-            <li>인제대학교 멀티미디어학부 부교수</li>
-            <li>부산대학교 디자인학과 겸임교수</li>
-            <li>(주)D-insight 디자인 실장</li>
-            <li>인제대학교 멀티미디어학부장 역임</li>
-          </ul>
-          <h5>Research</h5>
-          <ul>
-            <li>디자인 씽킹 연구</li>
-            <li>디자인 씽킹 연구</li>
-            <li>디자인 씽킹 연구</li>
-          </ul>
-        </div>
-        </div>
+        <h2>Faculty</h2>
+        {facultyMembers.map((member) => (
+          <div className="member-list" key={`faculty-${member.id}`}>
+            {(() => {
+              const educationList = normalizeList(member.education ?? member.Education ?? member.educations);
+              const experienceList = normalizeList(member.experience ?? member.Experience ?? member.experiences);
+              const researchList = normalizeList(member.research ?? member.Research ?? member.researches);
+
+              return (
+                <>
+            <div className="member-item">
+              {member.image ? (
+                <img className="member-item-image member-item-image-real" src={member.image} alt={member.name} />
+              ) : (
+                <div className="member-item-image member-item-image-placeholder"></div>
+              )}
+              <div className="member-item-name">
+                <h3>{member.name}</h3>
+                <h6>{member.englishName}</h6>
+              </div>
+            </div>
+            {member.quote ? (
+              <div className="faculty-quote">
+                <h3>{`"${member.quote}"`}</h3>
+              </div>
+            ) : null}
+            <div className="profile-info">
+              <h5>Education</h5>
+              <ul>
+                {educationList.map((item, index) => (
+                  <li key={`${member.id}-edu-${index}`}>{item}</li>
+                ))}
+                {educationList.length === 0 ? <li>No education data</li> : null}
+              </ul>
+              <h5>Experience</h5>
+              <ul>
+                {experienceList.map((item, index) => (
+                  <li key={`${member.id}-exp-${index}`}>{item}</li>
+                ))}
+                {experienceList.length === 0 ? <li>No experience data</li> : null}
+              </ul>
+              <h5>Research</h5>
+              <ul>
+                {researchList.map((item, index) => (
+                  <li key={`${member.id}-res-${index}`}>{item}</li>
+                ))}
+                {researchList.length === 0 ? <li>No research data</li> : null}
+              </ul>
+            </div>
+                </>
+              );
+            })()}
+          </div>
+        ))}
         <hr/>
         <h2>Student</h2>
-        <div className="member-list">
-        <div className="member-item">
-        <div className="member-item-image"></div>
-        <div className="member-item-name">
-        <h3>Name</h3>
-        <h6>English Name</h6>
-        </div>
-        </div>
-          <div className="profile-info">
-            
-          <h5>Research</h5>
-          <ul>
-            <li>(BA)</li>
-            <li>(MA)</li>
-            <li>(PhD)</li>
-          </ul>
-          <h5>Award</h5>
-          <ul>
-            <li>(BA)</li>
-            <li>(MA)</li>
-            <li>(PhD)</li>
-          </ul>
+        {studentMembers.map((member) => (
+          <div className="member-list" key={`student-${member.id}`}>
+            <div className="member-item">
+              {member.image ? (
+                <img className="member-item-image member-item-image-real" src={member.image} alt={member.name} />
+              ) : (
+                <div className="member-item-image member-item-image-placeholder"></div>
+              )}
+              <div className="member-item-name">
+                <h3>{member.name}</h3>
+                <h6>{member.englishName}</h6>
+              </div>
+            </div>
+            <div className="profile-info">
+              <h5>Research</h5>
+              <ul>
+                {(member.research || []).map((item, index) => (
+                  <li key={`${member.id}-stu-res-${index}`}>{item}</li>
+                ))}
+              </ul>
+              <h5>Award</h5>
+              <ul>
+                {(member.award || []).map((item, index) => (
+                  <li key={`${member.id}-stu-awd-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        ))}
       </section>
     </main>
   );
