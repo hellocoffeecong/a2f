@@ -43,7 +43,8 @@
         "우수 논문",
         "공모전 수상"
       ]
-    },{
+    },
+    {
       "id": 2,
       "name": "Name",
       "englishName": "English Name",

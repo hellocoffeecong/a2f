@@ -1,0 +1,19 @@
+[
+  {
+    "id": 100,
+    "title": "프로젝트 제목",
+    "author": "A2F Design Lab",
+    "period": "2026",
+    "summary": "프로젝트 요약",
+    "images": [
+      {
+        "src": "https://example.public.blob.vercel-storage.com/project/2026/sample-1.jpeg",
+        "alt": "Project image 1"
+      },
+      {
+        "src": "https://example.public.blob.vercel-storage.com/project/2026/sample-2.jpeg",
+        "alt": "Project image 2"
+      }
+    ]
+  }
+]

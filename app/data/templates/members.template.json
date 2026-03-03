@@ -1,0 +1,40 @@
+{
+  "faculty": [
+    {
+      "id": 100,
+      "name": "홍길동",
+      "englishName": "Gil Dong Hong",
+      "image": "https://example.public.blob.vercel-storage.com/member/2026/faculty-1.jpeg",
+      "quote": "Faculty quote text",
+      "education": [
+        "(BA) University A",
+        "(MA) University B",
+        "(PhD) University C"
+      ],
+      "experience": [
+        "Experience 1",
+        "Experience 2"
+      ],
+      "research": [
+        "Research topic 1",
+        "Research topic 2"
+      ]
+    }
+  ],
+  "students": [
+    {
+      "id": 100,
+      "name": "학생 이름",
+      "englishName": "Student Name",
+      "image": "https://example.public.blob.vercel-storage.com/member/2026/student-1.jpeg",
+      "research": [
+        "(BA) Inje University",
+        "(MA) Inje University"
+      ],
+      "award": [
+        "Award 1",
+        "Award 2"
+      ]
+    }
+  ]
+}
