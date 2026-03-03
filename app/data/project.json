@@ -3,11 +3,11 @@
     "id": 1,
     "title": "AI Co-thinking Design Project",
     "author": "A2F Design Lab",
-    "period": "2026",
+    "period": 2026,
     "summary": "생성형 AI를 공동 사고 파트너로 활용해 문제 정의부터 시각화까지 수행한 프로젝트.",
     "images": [
       {
-        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2025/2025-design01.jpeg",
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2026-design02.jpeg",
         "alt": "AI Co-thinking project image 1"
       },
       {
@@ -21,6 +21,14 @@
       {
         "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2026-design02.jpeg",
         "alt": "AI Co-thinking project image 4"
+      },
+      {
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2025/2025-design01.jpeg",
+        "alt": "AI Co-thinking project image 5"
+      },
+      {
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2026-design02.jpeg",
+        "alt": "AI Co-thinking project image 6"
       }
       ,
       {
@@ -37,7 +45,7 @@
     "id": 2,
     "title": "Local Issue Service Design",
     "author": "A2F Research Team",
-    "period": "2025",
+    "period": 2025,
     "summary": "지역 현안 해결을 위한 사용자 조사 기반 서비스 디자인 프로젝트.",
     "images": [
       {
@@ -62,7 +70,7 @@
     "id": 3,
     "title": "Local Issue Service Design2",
     "author": "A2F Research Team2",
-    "period": "2025",
+    "period": 2025,
     "summary": "test summary.",
     "images": [
       {
@@ -80,6 +88,35 @@
       {
         "src": "/news-sample.png",
         "alt": "Local issue service design image 4"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "test",
+    "author": "test",
+    "period": 2030,
+    "summary": "test test test",
+    "images": [
+      {
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2025-design01.jpeg",
+        "alt": "TEST"
+      },
+      {
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2025-design02.jpeg",
+        "alt": "TEST"
+      },
+      {
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2026-design01.jpeg",
+        "alt": "TEST"
+      },
+      {
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2026-design02.jpeg",
+        "alt": "TEST"
+      },
+      {
+        "src": "https://twtzambetzsy1e8g.public.blob.vercel-storage.com/project/2026/2025-11-30-poster2.jpeg",
+        "alt": "TEST"
       }
     ]
   }
