@@ -311,7 +311,7 @@ These were confirmed by the project owner after Figma MCP verification. They tak
 - Project member: entered directly (not linked to Team), max 1, `{ name, degree, profileImage? }`, degree uses the Award degree list.
 - Professor sections (education, experience, research, projects): `string[]`, edited per section with add / delete / reorder.
 - Home admin-editable: introduction paragraphs, Why A2F text, research field title/subtitle/description. Fixed in code: logo, navigation labels, research field icons, decorative elements.
-- `settings.json`: `{ contact: { addressLines, phone, email }, footerText }`. The Publication URL stays in `NOTION_PUBLICATION_URL`.
+- `settings.json`: `{ contact: { addressLines, phone, email }, footerLines }` — footer phrases split after commas, recombined per breakpoint (1920 one line; 1440/768 first phrase + rest; 365 one per line); the admin edits it as one sentence. The Publication URL stays in `NOTION_PUBLICATION_URL` (menu shown disabled until set; opens in a new tab).
 - Image upload limit: 10MB per file, same value in admin and server validation.
 
 ---
@@ -1221,4 +1221,6 @@ Do not automatically proceed to the next major phase when approval is expected.
 - Existing public pages under `src/app/(public)/*.js` and `src/app/(public)/data/*.json` are legacy: leave them unchanged (including their lint errors) until they are replaced in the UI phases.
 - Not yet decided: ffmpeg installation (decide before the animation phase).
 
-Next: step 2 (common Header / Footer public UI). Do not start Public UI or animation work without explicit approval of that step.
+- Step 2 (common Header / Footer): done — `components/public/layout/` (SiteHeader, HeaderNav, MobileMenu, FooterView, SiteFooter), sticky header (below the AdminBar in admin via `--sticky-offset`), hamburger panel (0.25 s slide/fade, off with reduced motion), footer in-context editing (`components/admin/edit/Editable`, `InlineTextEditor`, `editors/FooterTextEditor`, `admin/(protected)/settings-actions.ts`). Verified against Figma at 365/768/1440/1920 and with an admin editing E2E test.
+
+Next: step 3 (image upload foundation). Do not start Public UI or animation work without explicit approval of that step.

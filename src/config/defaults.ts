@@ -83,7 +83,7 @@ export const DEFAULT_CONTENT: { [K in DataKey]: DocumentContent<K> } = {
         phone: "+82. 055. 320. 3412",
         email: "ryou@inje.ac.kr",
       },
-      footerText: "2026 A2F Design Lab, Department of Multimedia Design, Inje University",
+      footerLines: ["2026 A2F Design Lab,", "Department of Multimedia Design,", "Inje University"],
     },
   },
 

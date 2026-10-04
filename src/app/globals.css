@@ -2,22 +2,9 @@ body {
   margin: 0;
 }
 
-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  flex-wrap: wrap;
-}
-
-footer h5,
-footer h6 {
-  margin: 0;
-}
-
-footer h6 {
-  font-weight: 300;
+/* Anchor jumps stop below the sticky header (and the AdminBar in admin routes). */
+html {
+  scroll-padding-top: calc(var(--sticky-offset) + var(--header-height));
 }
 
 main {
@@ -179,51 +166,6 @@ main {
 .home-sub-nav a:hover {
   background: #000;
   color: #fff;
-}
-
-.main-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  padding: 1rem 1.5rem;
-}
-
-.main-nav a {
-  color: #000;
-  text-decoration: none;
-}
-
-.main-nav a:not(.brand) {
-  position: relative;
-  padding-left: 0.9rem;
-}
-
-.main-nav a:not(.brand)::before {
-  content: "■";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.main-nav a:not(.brand):hover::before,
-.main-nav a:not(.brand).is-active::before {
-  opacity: 1;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 0.25rem;
-}
-
-.logo {
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1;
 }
 
 .hero-description-sub {

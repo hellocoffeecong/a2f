@@ -45,4 +45,33 @@
   /* Interaction */
   --focus-ring: 2px solid var(--color-green);
   --transition-fast: 150ms ease;
+  --transition-panel: 250ms ease-out;  /* hamburger panel slide/fade */
+
+  /* Sticky chrome. --sticky-offset is raised by the AdminBar in admin routes. */
+  --header-height: 100px;        /* 365 */
+  --admin-bar-height: 48px;      /* not in Figma: admin-only strip */
+  --sticky-offset: 0px;
+
+  /* Stacking order */
+  --z-header: 50;
+  --z-admin-bar: 60;
+  --z-menu: 100;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-height: 130px;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --header-height: 120px;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --header-height: 125px;
+  }
 }

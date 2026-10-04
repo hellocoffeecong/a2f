@@ -1,0 +1,33 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-12);
+  padding: var(--space-16) var(--page-padding-mobile);
+
+  background: var(--color-white);
+}
+
+.actions {
+  display: flex;
+
+  gap: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .editor {
+    padding-inline: var(--page-padding-tablet);
+  }
+}
+
+@media (min-width: 1440px) {
+  .editor {
+    padding-inline: var(--page-padding-desktop);
+  }
+}
+
+@media (min-width: 1920px) {
+  .editor {
+    padding-inline: var(--page-padding-large);
+  }
+}

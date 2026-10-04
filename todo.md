@@ -90,7 +90,7 @@
 - [x] `docs/DATA_MODEL.md`, `blob:test` 재작성
 - 참고: 저장 1회 약 2.4초 (오래된 버전 삭제 시 약 4.2초). 편집 기능 구현 시 Server Action의 `after()`로 삭제를 응답 뒤로 미루는 것 검토
 
-### 4. Phase 4 — 관리자 인증 ✅ (2026-10-04, 커밋 전)
+### 4. Phase 4 — 관리자 인증 ✅ (2026-10-04, `cc7dab5`)
 - [x] Public/Admin 레이아웃 분리: root layout = html/body/폰트/토큰/globals, 기존 Public 페이지 → `src/app/(public)/` (URL·내용 그대로)
 - [x] `src/proxy.ts`: `/admin/*` 1차 게이트(쿠키 유무만) + `X-Robots-Tag: noindex`
 - [x] `/admin/login` + `LoginForm`, 로그인/로그아웃 Server Action (`src/app/admin/actions.ts`)
@@ -106,7 +106,7 @@
 - [x] Private Blob store `a2f-dev-private` 생성·연결 (`AUTH_BLOB_STORE_ID`)
 - [x] Private store 검증: 익명 접근 403, Public store에 admin-auth 없음, 평문 비밀번호 없음, 최신 1개 버전만 보관
 - [x] 임시 계정으로 bootstrap → production 검증 24/24 (로그인, 현재 비밀번호 확인, 아이디만 변경, 비밀번호 변경, 기존·복사 세션 즉시 무효화, 로그아웃) → **테스트 계정 삭제, store 비움**
-- [ ] **(내가 할 일) 운영 관리자 계정 생성**: `npm run admin:bootstrap` (터미널에서 직접, 비밀번호는 화면에 표시되지 않음)
+- [x] 운영 관리자 계정 생성 (`npm run admin:bootstrap`, 2026-10-04)
 
   **Private store 생성 (Vercel → a2f 프로젝트 → Storage → Create Database → Blob)**
   | 항목 | 값 |
@@ -118,7 +118,7 @@
   | Add a read-write token | 체크하지 않음 |
   → 생성 후 Connections의 `a2f` 행 ⋮ → 환경에 **Development** 추가 (Production·Preview·Development 모두)
   → Settings → Environment Variables에 `AUTH_BLOB_STORE_ID`가 생겼는지 확인
-- [ ] 커밋 & push
+- [x] 커밋 & push (`cc7dab5`)
 - 참고: 로그아웃은 해당 브라우저 쿠키만 지운다. 모든 세션을 끊으려면 `/admin/account`에서 계정 정보를 변경(epoch 갱신)하거나 `SESSION_SECRET` 교체
 
 ---
@@ -127,18 +127,20 @@
 > Phase 순서도 **페이지 단위로 "Public UI → 같은 컴포넌트에 편집 기능"**으로 변경 (CLAUDE.md §31).
 > Public UI가 없는 페이지에 임시 관리자 화면을 만들지 않는다.
 
-### 새 단계 1. 인증 정리 + AdminBar 구조 ✅ (2026-10-04, 커밋 전)
+### 새 단계 1. 인증 정리 + AdminBar 구조 ✅ (2026-10-04, `cc7dab5`)
 - [x] 대시보드, AdminNav, `config/admin.ts`, AdminShell 삭제
 - [x] `AdminBar` (편집 모드 표시 · 사이트에서 보기 · 로그아웃) + `src/lib/admin-paths.ts` (`/` ↔ `/admin` 경로 대응)
 - [x] `/admin`은 Home 단계 전까지 안내 문구만 표시
 - [x] CLAUDE.md §7C(in-context editing 원칙), §22, §30~32, §39 / todo.md 반영
 
-### 새 단계 2. 공통 Header / Footer Public UI
-- [ ] Figma 분석: GNB(1440·1920 데스크톱, 365·768 햄버거 패널), Footer 4종
-- [ ] `globals.css` 정리 (reset·기본값만, 기존 `.hero` 등 페이지 스타일 제거) — 기존 페이지 교체 시점과 맞춤
-- [ ] Header / GNB (현재 페이지 SemiBold #008C2A), Hamburger 패널, Footer — 1440 → 1920 → 768 → 365
-- [ ] Admin: 같은 GNB를 쓰되 링크를 `/admin/...`으로 연결, Footer 연락처·문구 in-context 편집 (settings.json)
-- [ ] 편집 도구 첫 구현: `Editable`, `InlineTextEditor` (+ Server Action: `requireAdmin` → 검증 → `saveDocument` → `refreshContent`)
+### 새 단계 2. 공통 Header / Footer Public UI ✅ (2026-10-04, 커밋 전)
+- [x] Figma 분석: GNB(1440·1920 데스크톱, 365·768 햄버거 패널), Footer 4종
+- [x] `globals.css`에서 기존 nav·footer 규칙 제거, `NavLinks.js` 삭제 (`.hero` 등 페이지 스타일은 각 페이지 교체 시점에)
+- [x] Header / GNB (sticky, 현재 페이지 SemiBold #008C2A), Hamburger 패널(0.25초 slide/fade), Footer(`footerLines`) — 4개 크기 Figma 비교 완료
+- [x] Admin: 같은 GNB(`basePath="/admin"`), AdminBar 아래 sticky, Footer 문구 in-context 편집 — E2E 14/14
+- [x] 편집 도구 첫 구현: `Editable`, `InlineTextEditor` (+ Server Action: `requireAdmin` → 검증 → `saveDocument` → `refreshContent`)
+- [ ] Publication Notion URL 확정 시 Vercel에 `NOTION_PUBLICATION_URL` 설정 (지금은 메뉴 비활성 표시)
+- [ ] 커밋 & push
 
 ### 새 단계 3. 이미지 업로드 기반
 - [ ] `handleUploadPresigned` + `uploadPresigned` (OIDC 지원 방식), `BLOB_WEBHOOK_PUBLIC_KEY` 동작 확인
@@ -203,4 +205,4 @@
 ## 📦 커밋 상태
 - `1be8245` Phase 1·2 + 문서 (push 완료)
 - `74e96b5` Phase 3 + 버전 파일 저장 방식 (push 완료)
-- 커밋 대기: Phase 4 (레이아웃 분리, 관리자 인증, 디자인 시스템 시작, AdminBar 구조, 문서)
+- `cc7dab5` Phase 4 + 관리자 계정 Private store + AdminBar 구조 + 디자인 시스템 시작 (push 완료, 배포 Ready: https://a2f-beryl.vercel.app)

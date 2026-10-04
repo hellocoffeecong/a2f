@@ -129,7 +129,9 @@ export const settingsSchema = z.object({
     phone: optionalText,
     email: z.union([z.email(), z.literal("")]),
   }),
-  footerText: optionalText,
+  // One sentence split into phrases; the footer joins them per breakpoint
+  // (1920: 1 line, 1440/768: first phrase + rest, 365: one phrase per line).
+  footerLines: z.array(requiredText).min(1).max(6),
 });
 
 // Stored documents --------------------------------------------------------

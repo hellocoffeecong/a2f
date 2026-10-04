@@ -1,14 +1,22 @@
+/* While the AdminBar is on the page, the sticky site header sits right below it. */
+:global(html):has(.bar) {
+  --sticky-offset: var(--admin-bar-height);
+}
+
 .bar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-admin-bar);
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
+  height: var(--admin-bar-height);
+  box-sizing: border-box;
+
   gap: var(--space-16);
-  padding: var(--space-8) var(--page-padding-mobile);
+  padding: 0 var(--page-padding-mobile);
 
   font-family: var(--font-base);
   font-size: 14px;

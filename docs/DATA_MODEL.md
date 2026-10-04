@@ -249,7 +249,7 @@ Home의 Award & Activity 목록과 `/award/[id]` 상세에 사용. 별도 목록
 | `contact.addressLines` | string[] | Home 하단 주소 (앞의 A2F 로고는 UI 장식) |
 | `contact.phone` | string | |
 | `contact.email` | string | 이메일 형식 또는 빈 값 |
-| `footerText` | string | Footer 문구 |
+| `footerLines` | string[] (1~6) | Footer 문구를 쉼표 뒤에서 나눈 구절. 화면 크기별 조합: 1920 한 줄, 1440·768 첫 구절 + 나머지, 365 구절마다 줄바꿈. 관리자는 한 문장으로 편집 |
 
 ```json
 {
@@ -257,7 +257,7 @@ Home의 Award & Activity 목록과 `/award/[id]` 상세에 사용. 별도 목록
   "updatedAt": "2026-10-04T05:00:00.000Z",
   "data": {
     "contact": { "addressLines": ["Line 1,", "Line 2,", "South Korea"], "phone": "+82. 00. 000. 0000", "email": "lab@example.com" },
-    "footerText": "2026 Sample Lab, Department, University"
+    "footerLines": ["2026 Sample Lab,", "Department,", "University"]
   }
 }
 ```
