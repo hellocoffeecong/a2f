@@ -3,7 +3,8 @@
 //
 //   1. export  — with the SOURCE project's env:  downloads every blob + manifest.json
 //   2. import  — with the TARGET project's env:  uploads files, rewrites image URLs inside
-//                data/*.json to the target store's URLs, uploads the JSON, verifies.
+//                data/**/*.json (every kept version) to the target store's URLs, uploads the
+//                JSON, verifies.
 //
 // Usage (see docs/MIGRATION.md):
 //   node --env-file=.env.source scripts/blob-migrate.mjs export ./migration-data

@@ -90,12 +90,13 @@ export const projectSchema = z.object({
 
 const sectionLines = z.array(requiredText);
 
+// The "Prof." prefix before the English name is rendered by the UI, not stored.
 export const professorSchema = z.object({
   name: requiredText,
   nameKo: optionalText,
   title: optionalText,
   department: optionalText,
-  address: optionalText,
+  addressLines: z.array(requiredText),
   phone: optionalText,
   email: z.union([z.email(), z.literal("")]),
   education: sectionLines,
@@ -145,3 +146,6 @@ export const documentSchemas = {
 export type ContentDocuments = {
   [K in DataKey]: z.infer<(typeof documentSchemas)[K]>;
 };
+
+// A document's content without the version metadata that saveDocument manages.
+export type DocumentContent<K extends DataKey> = Omit<ContentDocuments[K], "version" | "updatedAt">;

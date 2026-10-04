@@ -74,13 +74,23 @@
 - [ ] 다음 push로 재배포된 뒤 Vercel 대시보드에서 저장소 read-write 토큰 **Revoke** (OIDC만 사용)
 - 참고: `VERCEL_OIDC_TOKEN`은 약 12시간 후 만료 → 로컬 인증 오류 시 `npx vercel env pull .env.local --yes` 다시 실행
 
-### 2. 커밋
-- [ ] Phase 1·2 + 문서 + `.mcp.json` 커밋 (references/는 gitignore로 제외됨)
+### 2. 커밋 ✅ (2026-10-04)
+- [x] Phase 1·2 + 문서 + `.mcp.json` 커밋 `1be8245` → `main` push → Vercel 재배포 Ready (Next 16.3.8)
+- [ ] Blob store `a2f-dev-blob`의 read-write 토큰 **Revoke** (재배포 완료됐으므로 지금 가능)
+- 참고: 이 Mac의 `gh` 활성 계정은 `swhwang81` (다른 프로젝트에서 `hellocoffeecong` 필요 시 `gh auth switch -u hellocoffeecong`)
+- 빌드 로그 경고 (배포에는 영향 없음): `engines` 범위 지정 안내, ESLint 9 지원 종료 안내 → `eslint-config-next`가 ESLint 10을 지원하면 업그레이드 검토
 
-### 3. Phase 3 — JSON 스키마 / 타입 마무리
-- [ ] 스키마 최종 점검 (§7A 기준)
-- [ ] 각 JSON의 초기(빈) 문서 정의 — Home은 Research Field 6개 기본값 필요
-- [ ] 샘플 스키마 파일 (repo에는 샘플만, 운영 데이터 X)
+### 3. Phase 3 — JSON 스키마 / 타입 마무리 ✅ (2026-10-04, 커밋 전)
+- [x] 스키마 최종 점검 (Figma 기준). 교수 `address` → `addressLines[]`
+- [x] 초기 문서 `src/config/defaults.ts` (Home·settings = Figma 문구, 나머지 빈 값), `ensureDocument()`
+- [x] ID 생성 `src/lib/utils/id.ts`
+- [x] **저장 방식 변경**: Public Blob CDN이 덮어쓴 URL의 예전 내용을 계속 반환 → JSON을 버전별 새 파일(`data/<key>/v000001.json`)로 저장
+  - 최신 = 파일 번호 최대값 (list), 저장 = `allowOverwrite:false`로 새 버전 생성, 최근 10개 보관, 롤백 = 과거 내용을 새 버전으로 저장
+  - dev Blob 실검증: 즉시 반영 ✅ / 동시 저장 5건 중 1건만 성공 ✅ / 보관 10개 ✅ / 롤백 ✅ / Next 캐시 무효화 ✅
+- [x] `docs/DATA_MODEL.md` (필드·제한값·더미 샘플)
+- [x] `blob:test`를 새 방식 기준으로 재작성
+- [ ] 커밋 & push
+- 참고: 저장 1회 약 2.4초 (오래된 버전 삭제 시 약 4.2초) — Blob API 지연. 관리자 화면에서는 Server Action의 `after()`로 삭제를 응답 뒤로 미루는 것 검토 (Phase 5)
 
 ### 4. Phase 4 — 관리자 인증
 - [ ] `npm run hash-password -- '<비밀번호>'` → `ADMIN_PASSWORD_HASH` 생성

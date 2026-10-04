@@ -1,13 +1,14 @@
-// Minimal Vercel Blob read/write check using a throwaway JSON file (never a real data key).
-// Usage: npm run blob:test   (loads .env.local; requires Node >= 22.9 for --env-file-if-exists)
+// Minimal Vercel Blob check for the storage strategy used by src/lib/blob/json-store.ts:
+// immutable versioned files (data/<key>/v000001.json, ...) found via list(), never overwritten.
+// Uses a throwaway prefix (never a real data key) and deletes everything it created.
 //
-// Verifies: credentials, create, origin read with ETag, conditional overwrite (ifMatch),
-// stale-ETag rejection, create-only collision behavior, cleanup.
+// Usage: npm run blob:test   (loads .env.local; Node >= 22.9)
 
-import { BlobPreconditionFailedError, del, get, put } from "@vercel/blob";
+import { del, get, list, put } from "@vercel/blob";
 
-const KEY = "data/_connection-test.json";
+const PREFIX = "data/_connection-test/";
 const ACCESS = "public";
+const pathFor = (version) => `${PREFIX}v${String(version).padStart(6, "0")}.json`;
 
 const authMode =
   process.env.VERCEL_OIDC_TOKEN && process.env.BLOB_STORE_ID
@@ -27,83 +28,62 @@ const step = async (name, fn) => {
   }
 };
 
-async function readFresh() {
-  const result = await get(KEY, { access: ACCESS, useCache: false });
-  if (!result || result.statusCode !== 200) return null;
-  return { json: await new Response(result.stream).json(), etag: result.blob.etag };
+const create = (version) =>
+  put(pathFor(version), JSON.stringify({ version }), {
+    access: ACCESS,
+    contentType: "application/json",
+    addRandomSuffix: false,
+    allowOverwrite: false,
+  });
+
+async function readLatest() {
+  const { blobs } = await list({ prefix: PREFIX });
+  const latest = blobs.toSorted((a, b) => b.pathname.localeCompare(a.pathname))[0];
+  if (!latest) return null;
+  const result = await get(latest.url, { access: ACCESS });
+  return JSON.parse(await new Response(result.stream).text());
+}
+
+async function cleanup() {
+  const { blobs } = await list({ prefix: PREFIX });
+  if (blobs.length > 0) await del(blobs.map((blob) => blob.url));
 }
 
 console.log(`Auth mode: ${authMode}`);
 
 try {
   await step("cleanup leftovers", async () => {
-    await del(KEY).catch(() => {});
+    await cleanup();
     return "ok";
   });
 
-  await step("create (allowOverwrite: false)", async () => {
-    const res = await put(KEY, JSON.stringify({ version: 1 }), {
-      access: ACCESS,
-      contentType: "application/json",
-      addRandomSuffix: false,
-      allowOverwrite: false,
-    });
-    return res.pathname;
+  await step("create v1", async () => (await create(1)).pathname);
+
+  await step("latest = v1 (list + read)", async () => {
+    const latest = await readLatest();
+    if (latest?.version !== 1) throw new Error(`got ${JSON.stringify(latest)}`);
+    return "version=1";
   });
 
-  let first;
-  await step("read from origin (useCache: false)", async () => {
-    first = await readFresh();
-    if (first?.json.version !== 1) throw new Error(`unexpected content: ${JSON.stringify(first?.json)}`);
-    return `version=1 etag=${first.etag}`;
+  await step("create v2, latest = v2 immediately", async () => {
+    await create(2);
+    const latest = await readLatest();
+    if (latest?.version !== 2) throw new Error(`stale read: ${JSON.stringify(latest)}`);
+    return "version=2";
   });
 
-  await step("conditional overwrite with current ETag", async () => {
-    await put(KEY, JSON.stringify({ version: 2 }), {
-      access: ACCESS,
-      contentType: "application/json",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      ifMatch: first.etag,
-    });
-    const now = await readFresh();
-    if (now?.json.version !== 2) throw new Error("overwrite not visible on origin read");
-    return `version=2 etag=${now.etag}`;
-  });
-
-  await step("overwrite with stale ETag is rejected", async () => {
+  await step("second create of v2 is rejected", async () => {
     try {
-      await put(KEY, JSON.stringify({ version: 99 }), {
-        access: ACCESS,
-        contentType: "application/json",
-        addRandomSuffix: false,
-        allowOverwrite: true,
-        ifMatch: first.etag,
-      });
+      await create(2);
     } catch (error) {
-      if (error instanceof BlobPreconditionFailedError) return "BlobPreconditionFailedError (expected)";
-      throw error;
+      return `rejected (${error?.constructor?.name})`;
     }
-    throw new Error("stale write was accepted — ifMatch is not enforced");
-  });
-
-  await step("create-only on existing file", async () => {
-    try {
-      await put(KEY, JSON.stringify({ version: 0 }), {
-        access: ACCESS,
-        contentType: "application/json",
-        addRandomSuffix: false,
-        allowOverwrite: false,
-      });
-    } catch (error) {
-      return `rejected with ${error?.constructor?.name}: ${error?.message}`;
-    }
-    throw new Error("create-only write overwrote an existing file");
+    throw new Error("create-only write overwrote an existing version");
   });
 } catch {
   // Failure already recorded; fall through to cleanup and report.
 } finally {
-  await del(KEY).catch(() => {});
+  await cleanup().catch(() => {});
 }
 
 console.table(results);

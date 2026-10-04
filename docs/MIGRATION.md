@@ -133,7 +133,8 @@ node --env-file=.env.target scripts/blob-migrate.mjs import ./migration-data --d
 # 업로드될 파일 목록과 JSON별 URL 재작성 개수 확인
 
 npm run blob:import
-# → 이미지 업로드 → data/*.json의 이미지 URL을 target 주소로 재작성 → JSON 업로드 → 누락 검사
+# → 이미지 업로드 → data/<key>/v*.json의 이미지 URL을 target 주소로 재작성 → JSON 업로드 → 누락 검사
+# (보관 중인 버전 최대 10개씩 함께 이전되므로 target에서도 롤백 이력이 유지됨)
 ```
 스크립트 안전장치:
 - source와 같은 store면 중단 (env를 잘못 불러온 경우 방지)

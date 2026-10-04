@@ -834,19 +834,21 @@ Do not rely on client-side hiding of admin controls as authentication.
 
 ## 24. Vercel Blob Structure
 
-JSON:
+JSON — each document is a folder of **immutable version files** (never overwritten):
 
 ```text
 data/
-├── home.json
-├── awards.json
-├── projects.json
-├── professor.json
-├── members.json
-└── settings.json
+├── home/       v000001.json, v000002.json, ...
+├── awards/     v000001.json, ...
+├── projects/
+├── professor/
+├── members/
+└── settings/
 ```
 
-Images:
+Why: a public Blob store's CDN keeps serving the old content of an overwritten URL (observed `x-vercel-cache: HIT` with the old body minutes after an overwrite; `cache-control: max-age=2592000`), and `get({ useCache: false })` only bypasses the CDN for private stores. A new file per version always has a fresh URL.
+
+Images (immutable too — unique file names, never overwritten):
 
 ```text
 images/
@@ -857,37 +859,27 @@ images/
 └── members/
 ```
 
+Implementation: `src/config/storage.ts` (paths, `DATA_HISTORY_LIMIT`), `src/lib/blob/json-store.ts`, `src/lib/blob/initialize.ts`. Field-level reference: `docs/DATA_MODEL.md`.
+
 ---
 
 ## 25. JSON Versioning
 
-For list-based data:
+Every version file contains its own metadata:
 
 ```json
-{
-  "version": 1,
-  "updatedAt": "",
-  "items": []
-}
+{ "version": 3, "updatedAt": "2026-10-04T05:30:00.000Z", "items": [] }
+{ "version": 3, "updatedAt": "2026-10-04T05:30:00.000Z", "data": {} }
 ```
 
-For single-object data:
-
-```json
-{
-  "version": 1,
-  "updatedAt": "",
-  "data": {}
-}
-```
-
-When editing:
-1. record the version at edit start
-2. compare with current Blob version before save
-3. save only if versions match
-4. increment version after successful save
-
-Avoid silent last-write-wins behavior.
+Rules (implemented in `json-store.ts` — do not bypass it):
+1. **Latest** = highest version among the files `list()`ed under `data/<key>/` (list is always current).
+2. Admin edit starts from the latest version and remembers its number.
+3. **Save** = create `data/<key>/v{n+1}.json` with `allowOverwrite: false`, only if the latest is still `n`. If two admins save from the same version, only one create succeeds; the other gets the conflict message. No last-write-wins.
+4. **Retention**: the newest `DATA_HISTORY_LIMIT` (10) versions are kept; older ones are deleted after each save.
+5. **Rollback** = `restoreDocumentVersion()`: save an older kept version's content as a new version (history is never rewritten).
+6. **Reads**: public pages use `getPublishedDocument()` (Next data cache, tag `data:<key>`); admin code reads `json-store` directly (always latest). After a save call `refreshContent(key)` in a Server Action or `expireContent(key)` in a Route Handler.
+7. Missing documents are created from `src/config/defaults.ts` via `ensureDocument()`.
 
 ---
 
@@ -1249,6 +1241,7 @@ Do not automatically proceed to the next major phase when approval is expected.
 - First task (architecture analysis report): done.
 - Phase 1 (TypeScript, ESLint, `src/` structure, config/types, Blob/validation/auth skeletons): done. Next.js updated to 16.3.8.
 - Phase 2 (Vercel Blob connection): done. Dev store `a2f-dev-blob` (Public, icn1) connected to Vercel project `a2f` via OIDC; `npm run blob:test` passes all steps. Locally, `VERCEL_OIDC_TOKEN` expires after ~12h — re-run `npx vercel env pull .env.local --yes`.
+- Phase 3 (schemas, defaults, versioned JSON storage — see §24/§25, `docs/DATA_MODEL.md`): done and verified on the dev store (freshness, concurrent saves, retention, rollback, Next cache invalidation). The dev store holds the initial documents for all six keys.
 - Accounts: development runs on the owner's GitHub (`swhwang81/a2f`) / Vercel / Blob; the finished site moves to the client's accounts later (see `todo.md` §11).
 - Figma MCP: connected (`.mcp.json`); SVG measurements verified and the resulting decisions recorded in §7A.
 - Existing public pages under `src/app/*.js` and `src/app/data/*.json` are legacy: leave them unchanged (including their lint errors) until they are replaced in the UI phases.
