@@ -1,7 +1,7 @@
 # A2F Lab 웹사이트 — 작업 현황 / TODO
 
-> 마지막 업데이트: 2026-10-03
-> 기준 문서: [CLAUDE.md](CLAUDE.md) (§7A 확정 결정사항, §39 현재 상태), [HOME_ANIMATION_GUIDE.md](HOME_ANIMATION_GUIDE.md)
+> 마지막 업데이트: 2026-10-04
+> 기준 문서: [CLAUDE.md](CLAUDE.md) (§7A 확정 결정사항, §7B CSS, §7C Admin in-context editing, §31 단계 순서, §39 현재 상태), [HOME_ANIMATION_GUIDE.md](HOME_ANIMATION_GUIDE.md)
 
 ---
 
@@ -31,7 +31,7 @@
 - [x] `app/` → `src/app/` 이동 (내용 변경 없음)
 - [x] TypeScript 설정 (`tsconfig.json`, `allowJs`로 기존 JS 유지), `jsconfig.json` 제거
 - [x] ESLint 9 flat config (`eslint.config.mjs`)
-- [x] npm scripts: `lint`, `typecheck`, `hash-password`, `blob:test`
+- [x] npm scripts: `lint`, `typecheck`, `blob:test` (`hash-password`는 이후 `admin:bootstrap`으로 대체)
 - [x] `src/config/` — 카테고리, 학위 목록 2종, 제한값, Blob 경로, 업로드 규칙(10MB)
 - [x] `src/lib/validation/` — Zod 스키마 6종 (home, awards, projects, professor, members, settings)
 - [x] `src/types/content.ts` — 스키마에서 타입 추출
@@ -80,79 +80,105 @@
 - 참고: 이 Mac의 `gh` 활성 계정은 `swhwang81` (다른 프로젝트에서 `hellocoffeecong` 필요 시 `gh auth switch -u hellocoffeecong`)
 - 빌드 로그 경고 (배포에는 영향 없음): `engines` 범위 지정 안내, ESLint 9 지원 종료 안내 → `eslint-config-next`가 ESLint 10을 지원하면 업그레이드 검토
 
-### 3. Phase 3 — JSON 스키마 / 타입 마무리 ✅ (2026-10-04, 커밋 전)
+### 3. Phase 3 — JSON 스키마 / 타입 마무리 ✅ (2026-10-04, `74e96b5`)
 - [x] 스키마 최종 점검 (Figma 기준). 교수 `address` → `addressLines[]`
 - [x] 초기 문서 `src/config/defaults.ts` (Home·settings = Figma 문구, 나머지 빈 값), `ensureDocument()`
 - [x] ID 생성 `src/lib/utils/id.ts`
 - [x] **저장 방식 변경**: Public Blob CDN이 덮어쓴 URL의 예전 내용을 계속 반환 → JSON을 버전별 새 파일(`data/<key>/v000001.json`)로 저장
   - 최신 = 파일 번호 최대값 (list), 저장 = `allowOverwrite:false`로 새 버전 생성, 최근 10개 보관, 롤백 = 과거 내용을 새 버전으로 저장
   - dev Blob 실검증: 즉시 반영 ✅ / 동시 저장 5건 중 1건만 성공 ✅ / 보관 10개 ✅ / 롤백 ✅ / Next 캐시 무효화 ✅
-- [x] `docs/DATA_MODEL.md` (필드·제한값·더미 샘플)
-- [x] `blob:test`를 새 방식 기준으로 재작성
+- [x] `docs/DATA_MODEL.md`, `blob:test` 재작성
+- 참고: 저장 1회 약 2.4초 (오래된 버전 삭제 시 약 4.2초). 편집 기능 구현 시 Server Action의 `after()`로 삭제를 응답 뒤로 미루는 것 검토
+
+### 4. Phase 4 — 관리자 인증 ✅ (2026-10-04, 커밋 전)
+- [x] Public/Admin 레이아웃 분리: root layout = html/body/폰트/토큰/globals, 기존 Public 페이지 → `src/app/(public)/` (URL·내용 그대로)
+- [x] `src/proxy.ts`: `/admin/*` 1차 게이트(쿠키 유무만) + `X-Robots-Tag: noindex`
+- [x] `/admin/login` + `LoginForm`, 로그인/로그아웃 Server Action (`src/app/admin/actions.ts`)
+- [x] `(protected)/layout.tsx`에서 `requireAdmin()` (서명·만료 검증) + `AdminBar`
+- [x] `next` 리다이렉트는 내부 `/admin` 경로만 허용 / 로그인 실패 약 1초 지연 + 구분 없는 메시지
+- [x] `SESSION_SECRET` Vercel 설정 (Production·Preview = Secret, Development = Config, 환경별 다른 값) + `vercel env pull`
+- [x] production 서버 검증 32/32 통과 (AdminBar 구조 변경 후 재검증 29/29)
+- [x] 공용 A2F 디자인 시스템 시작: `styles/tokens.css`, `styles/typography.css`, 폰트(Hanken = next/font, Pretendard = CDN), `Logo`(Figma 에셋), `Button`, `form/Field`
+- [x] **관리자 계정 관리 방식 변경**: 환경변수(`ADMIN_USERNAME`/`ADMIN_PASSWORD_HASH`) 폐기 → **Private Blob store**의 `data/admin-auth/` (최신 1개 버전)
+  - `npm run admin:bootstrap`(최초 1회, `-- --reset`으로 재설정), `/admin/account`에서 관리자가 직접 아이디·비밀번호 변경
+  - 세션에 `sessionEpoch` 포함 → 계정 변경 시 모든 세션 즉시 무효 (기존 "복사된 토큰 8시간 유효" 한계 해결)
+  - `versioned-store` 공통 팩토리(콘텐츠/계정 공용), `server-only` 빌드 가드 확인, `tsx` 추가
+- [x] Private Blob store `a2f-dev-private` 생성·연결 (`AUTH_BLOB_STORE_ID`)
+- [x] Private store 검증: 익명 접근 403, Public store에 admin-auth 없음, 평문 비밀번호 없음, 최신 1개 버전만 보관
+- [x] 임시 계정으로 bootstrap → production 검증 24/24 (로그인, 현재 비밀번호 확인, 아이디만 변경, 비밀번호 변경, 기존·복사 세션 즉시 무효화, 로그아웃) → **테스트 계정 삭제, store 비움**
+- [ ] **(내가 할 일) 운영 관리자 계정 생성**: `npm run admin:bootstrap` (터미널에서 직접, 비밀번호는 화면에 표시되지 않음)
+
+  **Private store 생성 (Vercel → a2f 프로젝트 → Storage → Create Database → Blob)**
+  | 항목 | 값 |
+  |---|---|
+  | Store Name | `a2f-dev-private` |
+  | Region | Seoul (icn1) |
+  | Access | **Private** (기본값 그대로) |
+  | Custom Environment Variable Prefix | **`AUTH_BLOB`** (기본 `BLOB`에서 반드시 변경) |
+  | Add a read-write token | 체크하지 않음 |
+  → 생성 후 Connections의 `a2f` 행 ⋮ → 환경에 **Development** 추가 (Production·Preview·Development 모두)
+  → Settings → Environment Variables에 `AUTH_BLOB_STORE_ID`가 생겼는지 확인
 - [ ] 커밋 & push
-- 참고: 저장 1회 약 2.4초 (오래된 버전 삭제 시 약 4.2초) — Blob API 지연. 관리자 화면에서는 Server Action의 `after()`로 삭제를 응답 뒤로 미루는 것 검토 (Phase 5)
+- 참고: 로그아웃은 해당 브라우저 쿠키만 지운다. 모든 세션을 끊으려면 `/admin/account`에서 계정 정보를 변경(epoch 갱신)하거나 `SESSION_SECRET` 교체
 
-### 4. Phase 4 — 관리자 인증
-- [ ] `npm run hash-password -- '<비밀번호>'` → `ADMIN_PASSWORD_HASH` 생성
-- [ ] `ADMIN_USERNAME`, `SESSION_SECRET` 설정 (로컬 `.env.local` + Vercel)
-- [ ] `/admin/login` 페이지, 로그인/로그아웃 Server Action
-- [ ] `proxy.ts`로 `/admin/*` 리다이렉트 + 모든 admin layout/action에서 `requireAdmin()`
+---
 
-### 5. Phase 5~9 — 관리자 CRUD (각각 승인 후 진행)
-- [ ] Phase 5: Home 관리 (소개 문단, Why A2F, Research Field 6개)
-- [ ] Phase 6: Award 관리 (label, 이미지 복수, People 최대 4명)
-- [ ] Phase 7: Project 관리 (category, customTag 1개, member 직접 입력 1명)
-- [ ] Phase 8: Professor 관리 (영역별 `string[]` 추가/삭제/순서)
-- [ ] Phase 9: Student / Alumni 관리 (순서 변경)
-- [ ] `settings.json` 관리 (연락처, footer)
+> **2026-10-04 방향 변경**: 관리자는 별도 CMS 대시보드가 아니라 **실제 Public 화면 위에서 수정하는 in-context editing** (CLAUDE.md §7C).
+> Phase 순서도 **페이지 단위로 "Public UI → 같은 컴포넌트에 편집 기능"**으로 변경 (CLAUDE.md §31).
+> Public UI가 없는 페이지에 임시 관리자 화면을 만들지 않는다.
 
-### 6. Phase 10 — 이미지 업로드 / 삭제 / 순서
-- [ ] `handleUploadPresigned` + `uploadPresigned` (OIDC 지원 방식)
-- [ ] `BLOB_WEBHOOK_PUBLIC_KEY` 요구사항 확인
-- [ ] 업로드 시 이미지 width/height 저장 (원본 비율 보존)
-- [ ] JSON 저장 성공 후에만 Blob 이미지 삭제
-- [ ] 이미지 순서: 위/아래 버튼 + 기본 drag & drop (라이브러리 없이)
+### 새 단계 1. 인증 정리 + AdminBar 구조 ✅ (2026-10-04, 커밋 전)
+- [x] 대시보드, AdminNav, `config/admin.ts`, AdminShell 삭제
+- [x] `AdminBar` (편집 모드 표시 · 사이트에서 보기 · 로그아웃) + `src/lib/admin-paths.ts` (`/` ↔ `/admin` 경로 대응)
+- [x] `/admin`은 Home 단계 전까지 안내 문구만 표시
+- [x] CLAUDE.md §7C(in-context editing 원칙), §22, §30~32, §39 / todo.md 반영
 
-### 7. Phase 11 — Public 데이터 연결
-- [ ] 기존 `src/app/data/*.json`의 **텍스트** 내용을 새 스키마로 변환해 Blob(`a2f-dev-blob`)으로 이전
-- [ ] **이미지는 다시 업로드해야 함**: 기존 JSON의 이미지는 삭제된 예전 store(`twtzambetzsy1e8g`)를 가리켜 모두 404 (2026-10-04 확인). 원본 이미지 파일을 확보해 관리자 화면(Phase 10 업로드) 또는 일괄 업로드 스크립트로 `images/**`에 올린다
-- [ ] 원본 이미지 파일 확보 (의뢰자 또는 내 로컬 보관본)
-- [ ] 이전 완료 후 repo에서 운영 JSON 삭제
-- 참고: 현재 배포된 기존 사이트도 같은 이유로 이미지가 깨져 있음 (새 UI로 교체 예정이라 수정하지 않음)
-- [x] `next.config`에 Blob 이미지 도메인(`*.public.blob.vercel-storage.com`) 추가 — 계정 무관
+### 새 단계 2. 공통 Header / Footer Public UI
+- [ ] Figma 분석: GNB(1440·1920 데스크톱, 365·768 햄버거 패널), Footer 4종
+- [ ] `globals.css` 정리 (reset·기본값만, 기존 `.hero` 등 페이지 스타일 제거) — 기존 페이지 교체 시점과 맞춤
+- [ ] Header / GNB (현재 페이지 SemiBold #008C2A), Hamburger 패널, Footer — 1440 → 1920 → 768 → 365
+- [ ] Admin: 같은 GNB를 쓰되 링크를 `/admin/...`으로 연결, Footer 연락처·문구 in-context 편집 (settings.json)
+- [ ] 편집 도구 첫 구현: `Editable`, `InlineTextEditor` (+ Server Action: `requireAdmin` → 검증 → `saveDocument` → `refreshContent`)
 
-### 8. Phase 12~16 — Figma 기반 UI (페이지별: 1440 → 1920 → 768 → 365)
-- [ ] 스타일 기반 구성 (CLAUDE.md §7B): `src/styles/tokens.css`, `typography.css`, 필요 시 `utilities.css`
-- [ ] `globals.css`를 reset·기본값·폰트만 남기도록 정리 (기존 `.hero` 등 페이지 스타일 제거 — 기존 페이지 교체 시점에)
-- [ ] 폰트 로드 (Hanken Grotesk, Pretendard)
-- [ ] 각 UI 작업 후 CSS 보고 (새/수정 CSS Module, 토큰, inline style 잔존 `grep -rn 'style={' src`)
-- [ ] Header / Navigation / Footer (활성 상태, 햄버거 패널)
-- [ ] Home (Award 페이지네이션, 크기별 페이지당 카드 수)
-- [ ] Award Detail (space-between + 최소 300 세로 간격)
-- [ ] Project List (행 정렬, cover crop, 9개씩 추가 로딩, Scroll to top)
-- [ ] Project Detail (원본 비율 유지)
-- [ ] Team (교수 이미지 3초 회전)
-- [ ] 기존 Public 페이지 교체 → 전체 lint 오류 해소
-- [ ] 아직 노드 상세를 안 본 프레임: Project Detail, Team
+### 새 단계 3. 이미지 업로드 기반
+- [ ] `handleUploadPresigned` + `uploadPresigned` (OIDC 지원 방식), `BLOB_WEBHOOK_PUBLIC_KEY` 동작 확인
+- [ ] MIME·확장자·10MB 검증, UUID 파일명, 업로드 시 width/height 저장
+- [ ] JSON 저장 성공 후에만 Blob 이미지 삭제, 순서 변경 도구 (`ImageReplace`, `ListControls` 기반)
 
-### 9. Phase 17 — 인터랙션 / 애니메이션
-- [ ] **ffmpeg 설치 여부 결정** (프레임 추출에 필요)
-- [ ] ani1 (Award hover, 0:2757) 분석 → 계획 보고
-- [ ] ani2 (Project image hover, 0:2875) 분석 → 계획 보고
-- [ ] ani3 (Home scroll, 0:2642) 분석 → 계획 보고
-- [ ] 애니메이션 라이브러리 필요 여부 결정 (GSAP / Framer Motion은 분석 후)
+### 새 단계 4. Home Public UI + Home 편집
+- [ ] Main Visual(정적 레이아웃, 애니메이션은 단계 8), Introduction, Why A2F, Research Fields(6개 고정, 아이콘 코드 고정), Award & Activity 목록(필터·페이지네이션, 크기별 페이지당 카드 수), 하단 연락처
+- [ ] Admin `/admin`: 같은 컴포넌트 + 문단·Research Field 텍스트 인라인 편집, Award 항목 추가/삭제/정렬(`EditPanel`)
+- [ ] 기존 Home 데이터의 텍스트를 새 스키마로 이전, 이미지는 원본 재업로드 (예전 store 삭제로 기존 이미지 404)
+- [ ] 기존 `(public)/page.js` 교체
 
-### 10. Phase 18~19 — QA / 배포
-- [ ] 365 / 768 / 1440 / 1920 반응형 QA
-- [ ] 관리자 기능 QA
+### 새 단계 5. Award Detail Public UI + 편집
+- [ ] `/award/[id]` (2열 space-between + 최소 300 세로 간격, People 최대 4명), `/award` → `/#award`
+- [ ] Admin `/admin/award/[id]`: 본문 인라인, 이미지 변경·순서, People `EditPanel`
+
+### 새 단계 6. Project List / Detail Public UI + 편집
+- [ ] 목록: 행 정렬(Masonry 아님), 이미지 cover crop, 카테고리·연도 필터, 9개씩 추가 로딩, Scroll to top
+- [ ] 상세: 원본 비율 유지
+- [ ] Admin `/admin/project`, `/admin/project/[id]`: 카드 추가/삭제/정렬, 상세 `EditPanel`, 이미지 순서
+- [ ] 기존 `(public)/project/*`, `news`, `education`, `publication` 페이지 정리 (Publication은 Notion 링크)
+
+### 새 단계 7. Team Public UI + 편집
+- [ ] 교수(영역별 string[], 사진 최대 3장 3초 회전), Student / Alumni (순서 변경)
+- [ ] Admin `/admin/team`
+- [ ] 기존 `(public)/data/*.json` 삭제 (모든 데이터 이전 후) → 전체 lint 오류 해소
+
+### 새 단계 8. Responsive / Animation / QA / 배포
+- [ ] **ffmpeg 설치 여부 결정** → ani1(Award hover, 0:2757) / ani2(Project hover, 0:2875) / ani3(Home scroll, 0:2642) 각각 분석 → 계획 보고
+- [ ] 애니메이션 라이브러리 필요 여부 결정 (분석 후)
+- [ ] 365 / 768 / 1440 / 1920 반응형 QA (Public + Admin)
 - [ ] Vercel 프로덕션 배포 (내 계정에서 먼저 검증)
 
-### 11. 의뢰자 계정으로 이전 (개발 완료 후)
+### 새 단계 9. 의뢰자 계정으로 이전 (개발 완료 후)
 > 개발·검증은 **내 GitHub(`swhwang81/a2f`) + 내 Vercel**에서 진행하고, 완료 후 의뢰자 GitHub/Vercel로 옮겨 새로 연결한다.
 > **상세 절차: [docs/MIGRATION.md](docs/MIGRATION.md)** — 이전 스크립트 `scripts/blob-migrate.mjs` (`npm run blob:export` / `blob:import`) 준비 완료
 - [ ] 의뢰자 GitHub로 소스 이전 (repo transfer 또는 새 repo에 push — 커밋 히스토리 유지 여부 결정)
 - [ ] 의뢰자 Vercel에 프로젝트 생성 + 의뢰자 Blob store(Public) 생성·연결
-- [ ] 의뢰자 Vercel 환경변수 새로 설정: `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`(의뢰자 비밀번호로 새로 생성), `SESSION_SECRET`(새 값), `NOTION_PUBLICATION_URL`, `NEXT_PUBLIC_SITE_URL`(의뢰자 도메인)
+- [ ] 의뢰자 Private Blob store 생성(prefix `AUTH_BLOB`) + `npm run admin:bootstrap`으로 의뢰자 관리자 계정 생성
+- [ ] 의뢰자 Vercel 환경변수 새로 설정: `SESSION_SECRET`(새 값), `NOTION_PUBLICATION_URL`, `NEXT_PUBLIC_SITE_URL`(의뢰자 도메인)
 - [ ] **Blob 데이터 이전**: 내 store의 `data/*.json`과 `images/**`를 의뢰자 store로 복사
   - JSON 안의 이미지 URL은 store 호스트가 바뀌므로 **URL 재작성 필요** (`pathname`은 그대로라 이것을 기준으로 재작성)
   - 이전 스크립트를 만들어 한 번에 처리 (복사 → URL 재작성 → 검증)
@@ -168,14 +194,13 @@
 - [ ] `A2F_Lab_Development_Guide.md`도 확정사항에 맞게 수정할지 (현재는 CLAUDE.md §7A가 우선)
 
 ## ⚠️ 알아둘 것
-- 기존 Public 페이지(`src/app/*.js`)는 **레거시** — UI 단계 전까지 수정하지 않음
-- 운영 JSON이 아직 git에 있음 (`src/app/data/`) — Phase 11에서 제거
+- 기존 Public 페이지(`src/app/(public)/*.js`)는 **레거시** — UI 단계 전까지 수정하지 않음
+- 운영 JSON이 아직 git에 있음 (`src/app/(public)/data/`) — Phase 11에서 제거
 - dev 의존성(`eslint-config-next`)에 high 취약점 5건 남음 (배포 런타임과 무관)
 - 전역 npm 캐시 권한 문제 → `sudo chown -R 501:20 ~/.npm` 실행하면 해결 (아직 미해결이면 `npx --cache /tmp/npm-cache-a2f ...`로 우회)
 - SVG 4개(1440/1920/768 Home, 768 Hamburger)는 로컬 렌더러로 안 열림 → Figma나 PDF로 확인
 
-## 📦 커밋 대기 중인 변경
-- `app/` → `src/app/` 이동 (staged)
-- `jsconfig.json` 삭제 (staged)
-- 수정: `.gitignore`, `package.json`, `package-lock.json`
-- 신규: `.env.example`, `.mcp.json`, `CLAUDE.md`, `HOME_ANIMATION_GUIDE.md`, `A2F_Lab_Development_Guide.md`, `eslint.config.mjs`, `tsconfig.json`, `scripts/`, `src/config/`, `src/lib/`, `src/services/`, `src/types/`, `todo.md`
+## 📦 커밋 상태
+- `1be8245` Phase 1·2 + 문서 (push 완료)
+- `74e96b5` Phase 3 + 버전 파일 저장 방식 (push 완료)
+- 커밋 대기: Phase 4 (레이아웃 분리, 관리자 인증, 디자인 시스템 시작, AdminBar 구조, 문서)

@@ -15,7 +15,7 @@
 | Blob 인증 | 환경변수 (`VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`) | target에서 Blob store 연결 시 자동 생성 |
 | 이미지 도메인 | `next.config.mjs`가 `*.public.blob.vercel-storage.com` 전체 허용 | 없음 |
 | 콘텐츠 / 이미지 | Blob store 안에 있음 (store 간 자동 이동 기능 없음) | `scripts/blob-migrate.mjs`로 복사 + URL 재작성 |
-| 관리자 계정 | 환경변수 (`ADMIN_*`, `SESSION_SECRET`) | target용으로 **새로 생성** |
+| 관리자 계정 | 의뢰자 **Private** Blob store의 `data/admin-auth/` + `SESSION_SECRET` | target에서 `npm run admin:bootstrap`으로 **새로 생성** (이전하지 않음) |
 | Vercel 프로젝트 연결 | `.vercel/` (gitignore, 로컬 전용) | target 프로젝트로 다시 `vercel link` |
 | Figma MCP | 각자 Figma 계정으로 로그인 (`.mcp.json`에는 비밀값 없음) | 의뢰자 측 개발자가 각자 `/mcp`로 인증 |
 
@@ -80,22 +80,29 @@ JSON의 이미지 정보는 `{ url, pathname, ... }`로 저장된다. store가 �
    | read-write token 추가 | 체크하지 않음 (OIDC 사용) |
 3. 생성 후 Connections에서 프로젝트 연결 환경에 **Development / Preview / Production 모두** 체크
    (기본은 Production, Preview만 — Development가 없으면 로컬 `vercel env pull`에서 `BLOB_STORE_ID`를 못 받음)
+4. 관리자 계정 전용 **Private** Blob store를 하나 더 만든다
+   | 항목 | 값 |
+   |---|---|
+   | Store Name | 예: `a2f-private` |
+   | Region | Seoul (icn1) |
+   | Access | **Private** (기본값 그대로) |
+   | Env Prefix | **`AUTH_BLOB`** (반드시 변경 — `BLOB`이면 콘텐츠 store 변수와 충돌) |
+   | read-write token 추가 | 체크하지 않음 |
+   → 연결 후 Development / Preview / Production 모두 체크. `AUTH_BLOB_STORE_ID`가 생성됨
 
 ---
 
 ## 4. 환경변수 설정 (의뢰자 Vercel → Settings → Environment Variables)
 
-Blob 연결로 `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`는 자동 생성된다. 나머지를 추가한다.
+Blob 연결로 `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`, `AUTH_BLOB_STORE_ID`는 자동 생성된다. 나머지를 추가한다.
+관리자 아이디·비밀번호는 환경변수가 아니다 (6번에서 `admin:bootstrap`으로 생성).
 
 | 변수 | 값 만드는 법 | 환경 |
 |---|---|---|
-| `ADMIN_USERNAME` | 의뢰자 관리자 아이디 | Production, Preview (+Development 필요 시) |
-| `ADMIN_PASSWORD_HASH` | `npm run hash-password -- '<의뢰자 비밀번호>'` 출력값 | 위와 같음 |
-| `SESSION_SECRET` | `openssl rand -base64 48` (**source 값 재사용 금지**) | 위와 같음 |
+| `SESSION_SECRET` | `openssl rand -base64 48` (**source 값 재사용 금지**, 환경마다 다른 값) | Production, Preview, Development |
 | `NOTION_PUBLICATION_URL` | 의뢰자 Notion Publication 페이지 URL | 전체 |
 | `NEXT_PUBLIC_SITE_URL` | 의뢰자 도메인 (예: `https://a2f.example.ac.kr`) | Production (Preview는 비워도 됨) |
 
-- 비밀번호 원문은 어디에도 저장하지 않는다. 해시만 Vercel에 넣는다.
 - `BLOB_READ_WRITE_TOKEN`은 넣지 않는다 (OIDC 사용).
 
 ---
@@ -152,11 +159,14 @@ rm -rf migration-data .env.source .env.target
 ## 6. 배포 및 검증
 
 1. 의뢰자 Vercel에서 **Redeploy** (환경변수 반영)
-2. 로컬을 target 기준으로 맞추고 연결 확인:
+2. 로컬을 target 기준으로 맞추고 연결 확인, **관리자 계정 생성**:
    ```bash
    npx vercel env pull .env.local --yes
-   npm run blob:test        # 6단계 모두 통과해야 함
+   npm run blob:test          # 모든 단계 통과해야 함
+   npm run admin:bootstrap    # 의뢰자와 함께: 아이디 입력, 비밀번호는 의뢰자가 직접 입력(화면에 표시 안 됨)
    ```
+   관리자 계정(`data/admin-auth/`)은 개발자 store에서 **이전하지 않는다** — target Private store에 새로 만든다.
+   이후 아이디·비밀번호 변경은 의뢰자가 `/admin/account`에서 직접 한다.
 3. 사이트 확인 체크리스트
    - [ ] Home: 소개 / Research Field / Award 목록·페이지네이션 / 이미지 표시
    - [ ] Award Detail, Project 목록·필터·추가 로딩, Project Detail, Team
@@ -196,5 +206,5 @@ rm -rf migration-data .env.source .env.target
 | import가 "not empty"로 중단 | target store에 이미 파일이 있음 → 의도한 덮어쓰기면 `--force`, 아니면 store 확인 |
 | import가 "same as the source"로 중단 | `.env.target`에 source 값이 들어감 → 5-3을 의뢰자 계정으로 다시 |
 | 이미지가 깨짐 | 이미지 URL이 이전 store를 가리킴 → import 로그의 "URLs rewritten" 확인, JSON 재확인 |
-| 관리자 로그인 실패 | `ADMIN_PASSWORD_HASH`를 다른 비밀번호로 만들었거나, 값이 잘림 → 다시 생성해 붙여넣기, `SESSION_SECRET` 32자 이상 확인 |
+| 관리자 로그인 실패 / "아직 설정되지 않았습니다" | 의뢰자 Private store에 계정이 없음 → `npm run admin:bootstrap` 실행. `AUTH_BLOB_STORE_ID`, `SESSION_SECRET`(32자 이상) 확인. 비밀번호 분실 시 `npm run admin:bootstrap -- --reset` |
 | 저장 시 "다른 관리자가 수정" | 정상 동작(버전 충돌). 새로고침 후 다시 저장 |

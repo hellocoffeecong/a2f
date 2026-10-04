@@ -264,7 +264,23 @@ Home의 Award & Activity 목록과 `/award/[id]` 상세에 사용. 별도 목록
 
 ---
 
-## 8. 이미지 업로드 규칙
+## 8. admin-auth (관리자 계정) — **Private store 전용**
+
+공개 콘텐츠와 분리된 **Private Blob store**(`AUTH_BLOB_STORE_ID`)의 `data/admin-auth/vNNNNNN.json`. 최신 1개 버전만 보관.
+Public store·Public 서비스·`DataKey`에는 포함되지 않으며 서버 전용 모듈(`src/lib/auth/account-store.ts`)에서만 읽는다.
+
+| 필드 | 타입 | 규칙 |
+|---|---|---|
+| `username` | string | 영문 소문자·숫자·`. _ -`, 3~32자 |
+| `passwordHash` | string | `scrypt:N:r:p:<salt>:<hash>` — 평문 비밀번호는 저장하지 않음 |
+| `sessionEpoch` | string | 계정 변경 때마다 새 무작위 값. 세션 토큰의 epoch와 다르면 로그인 무효 |
+
+생성: `npm run admin:bootstrap` (최초 1회) · 변경: `/admin/account` · 분실: `npm run admin:bootstrap -- --reset`
+(샘플 값은 싣지 않는다.)
+
+---
+
+## 9. 이미지 업로드 규칙
 
 - 허용: `image/jpeg`, `image/png`, `image/webp`, `image/avif` (확장자와 MIME 일치 필요)
 - 크기: 파일당 **10MB** 이하 (관리자·서버 동일)

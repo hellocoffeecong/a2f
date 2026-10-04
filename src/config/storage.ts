@@ -8,13 +8,15 @@ export const DATA_KEYS = ["home", "awards", "projects", "professor", "members", 
 
 export type DataKey = (typeof DATA_KEYS)[number];
 
-export const dataPrefix = (key: DataKey) => `data/${key}/`;
+// Path helpers take any document key: public content keys (DataKey) and the private
+// "admin-auth" key (stored in a separate private store, see lib/auth/account-store).
+export const dataPrefix = (key: string) => `data/${key}/`;
 
-export const dataVersionPath = (key: DataKey, version: number) =>
+export const dataVersionPath = (key: string, version: number) =>
   `${dataPrefix(key)}v${String(version).padStart(6, "0")}.json`;
 
 // Parses the version from a path made by dataVersionPath; null for anything else.
-export function parseDataVersion(key: DataKey, pathname: string): number | null {
+export function parseDataVersion(key: string, pathname: string): number | null {
   const match = pathname.slice(dataPrefix(key).length).match(/^v(\d{6,})\.json$/);
   return pathname.startsWith(dataPrefix(key)) && match ? Number(match[1]) : null;
 }

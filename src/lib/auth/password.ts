@@ -1,8 +1,9 @@
+import "server-only";
 import { randomBytes, scrypt, timingSafeEqual, type ScryptOptions } from "node:crypto";
 
 // Hash format: scrypt:N:r:p:<salt base64url>:<hash base64url>
 // ':' is used instead of '$' because Next's .env loader expands '$' sequences.
-// scripts/hash-password.mjs produces the same format — keep the two in sync.
+// Hashes are created only on the server (/admin/account) or by scripts/admin-bootstrap.ts.
 
 const PREFIX = "scrypt";
 const KEY_LENGTH = 64;

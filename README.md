@@ -29,10 +29,12 @@ npm run dev
 |---|---|
 | `VERCEL_OIDC_TOKEN`, `BLOB_STORE_ID` | Blob 인증 (OIDC). Blob store 연결 시 자동 생성 |
 | `BLOB_WEBHOOK_PUBLIC_KEY` | 브라우저 이미지 업로드 콜백 검증. 자동 생성 |
-| `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH` | 관리자 로그인. 해시는 `npm run hash-password -- '<비밀번호>'` |
+| `AUTH_BLOB_STORE_ID` | 관리자 계정 전용 **Private** Blob store (연결 시 prefix `AUTH_BLOB`) |
 | `SESSION_SECRET` | 관리자 세션 서명 키 (32자 이상) |
 | `NOTION_PUBLICATION_URL` | Publication 메뉴가 여는 Notion 페이지 |
 | `NEXT_PUBLIC_SITE_URL` | 사이트 대표 URL |
+
+관리자 아이디·비밀번호는 환경변수가 아니다. 최초 1회 `npm run admin:bootstrap`으로 만들고, 이후 관리자가 `/admin/account`에서 직접 바꾼다.
 
 ## 스크립트
 
@@ -40,7 +42,7 @@ npm run dev
 |---|---|
 | `npm run dev` / `build` / `start` | 개발 서버 / 빌드 / 실행 |
 | `npm run lint` / `typecheck` | ESLint / TypeScript 검사 |
-| `npm run hash-password -- '<pw>'` | `ADMIN_PASSWORD_HASH` 생성 |
+| `npm run admin:bootstrap` | 최초 관리자 계정 생성 (`-- --reset`: 비밀번호 재설정) |
 | `npm run blob:test` | Blob 연결 테스트 (임시 파일만 사용 후 삭제) |
 | `npm run blob:export` / `blob:import` | Blob store 이전 ([docs/MIGRATION.md](docs/MIGRATION.md)) |
 
@@ -56,7 +58,7 @@ src/
 │   └── validation/ # Zod 스키마
 ├── services/     # 페이지가 사용하는 데이터 조회 (캐시 태그)
 └── types/        # 스키마에서 추출한 타입
-scripts/          # hash-password, blob 연결 테스트, blob 이전
+scripts/          # admin-bootstrap, blob 연결 테스트, blob 이전
 ```
 
 운영 데이터(JSON)와 이미지는 저장소가 아닌 Vercel Blob에 있다.

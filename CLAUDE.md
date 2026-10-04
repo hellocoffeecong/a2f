@@ -335,7 +335,7 @@ Principle: **JSX/TSX = structure, data, state, events, behavior. CSS = layout, s
 ### File structure
 - CSS Modules by default: `Component.tsx` + `Component.module.css` side by side.
 - Page-only layout: `page.module.css`. Do not pile a whole page into one huge `page.module.css` — split into components (e.g. ProjectPage → ProjectFilter, ProjectGrid, ProjectCard), each with its own module.
-- Components that must have their own module: Header, Hamburger, Footer, AwardCard, AwardDetail, ProjectCard, ProjectGrid, ProjectDetail, Pagination, FilterDropdown, ProfessorProfile, TeamMember, AdminForm, AdminTable, AdminButton, AdminImageUploader.
+- Components that must have their own module: Header, Hamburger, Footer, AwardCard, AwardDetail, ProjectCard, ProjectGrid, ProjectDetail, Pagination, FilterDropdown, ProfessorProfile, TeamMember, and the admin editing kit (AdminBar, Editable, InlineTextEditor, ImageReplace, ListControls, EditPanel, ConfirmDialog).
   ```text
   src/
   ├── app/globals.css
@@ -346,7 +346,7 @@ Principle: **JSX/TSX = structure, data, state, events, behavior. CSS = layout, s
       └── utilities.css    # small shared utilities (only if needed)
   ```
 - `globals.css` holds only site-wide basics: reset, `html`/`body` defaults, `@font-face`, base background/color, box-sizing, anchor/button/input resets. No page or component styles.
-- Admin UI uses the same rules with its own shared admin components; it does not reuse the public visual system.
+- The admin shares the A2F Design System (tokens, typography, fonts, logo, `Button`, `Field`) and shows the public page design itself — see §7C.
 
 ### Tokens and typography
 - Repeated values become CSS variables in `src/styles/tokens.css`, e.g.:
@@ -395,6 +395,46 @@ layout → size → spacing → typography → color/background → border → e
 
 ---
 
+## 7C. Admin: In-Context Editing (confirmed)
+
+The admin is **not** a separate CMS/dashboard. It shows the real public pages and adds editing controls on top of them.
+
+### Structure
+- Admin URLs mirror public URLs: `/` ↔ `/admin`, `/award/[id]` ↔ `/admin/award/[id]`, `/project` ↔ `/admin/project`, `/project/[id]` ↔ `/admin/project/[id]`, `/team` ↔ `/admin/team`. `/admin/login` is the only admin-only page. Mapping helpers: `src/lib/admin-paths.ts`.
+- Public and admin pages render the **same presentation components** (pure, data-in). No duplicate admin versions of public UI.
+- **Never** add admin flags to public components (`editable={true}` etc.). Editing is added from the outside by composition:
+  ```tsx
+  // admin page only
+  <Editable editor={<IntroductionEditor value={...} version={v} />}>
+    <Introduction data={...} />            {/* same component as the public page */}
+  </Editable>
+  <ProjectGrid items={...} renderItemActions={(p) => <ItemActions id={p.id} />} />  {/* neutral slot */}
+  ```
+- Public pages must not import anything from `components/admin/` or admin actions, so editing code never reaches public visitors' bundles.
+- Controls render only in admin routes, under `src/app/admin/(protected)/` (authorized by `requireAdmin()`).
+
+### Admin chrome
+- `AdminBar` (thin sticky strip, `src/components/admin/AdminBar.tsx`): edit-mode label, "사이트에서 보기" (matching public URL), user, logout. Nothing else.
+- Page navigation uses the **shared public GNB**; in admin routes its links point to the `/admin/...` equivalents (pass the link mapping in, do not fork the component).
+- Public Header/Footer/page design stay as is in the admin. Contact/footer text is edited in place on the Footer.
+- No dashboard, no admin side/top nav, no Settings page.
+
+### Editing kit (`src/components/admin/edit/`, built as needed per page)
+- `Editable` — hover outline + edit chip around a region; opens its editor.
+- `InlineTextEditor` — simple text in place: input/textarea + 저장 / 취소.
+- `ImageReplace` — "이미지 변경" over an image → upload UI.
+- `ListControls` — 추가 / 삭제 (with `ConfirmDialog`) / 위·아래 정렬.
+- `EditPanel` — right-side drawer for complex input (Award/Project detail, Professor sections).
+- All controls use the A2F Design System (Hanken Grotesk, Pretendard, `#008C2A`, `#555`, `#888`, spacing tokens, square corners) so the site's look is not broken.
+
+### Saving
+Each admin Server Action: `requireAdmin()` → validate (Zod) → `saveDocument(key, expectedVersion, …)` → `refreshContent(key)`. A version conflict is shown inside the editor.
+
+### Do not
+- Build temporary CRUD dashboards or interim admin screens for pages whose public UI does not exist yet — no code that will soon be deleted.
+
+---
+
 ## 8. Navigation
 
 ### 365 and 768
@@ -418,6 +458,9 @@ Show desktop navigation directly:
 - TEAM
 
 Logo returns to Home.
+
+### In the admin
+The same GNB component is reused; its links go to the `/admin/...` equivalents (§7C).
 
 ---
 
@@ -791,44 +834,36 @@ Do not create an internal Publication CMS unless explicitly requested.
 
 ## 22. Admin Routes
 
-Recommended routes:
+Admin URLs mirror the public URLs (in-context editing, §7C):
 
 ```text
-/admin
-/admin/login
-/admin/home
-/admin/awards
-/admin/projects
-/admin/professor
-/admin/members
+/admin/login          login (the only admin-only page)
+/admin                ↔ /
+/admin/award/[id]     ↔ /award/[id]
+/admin/project        ↔ /project
+/admin/project/[id]   ↔ /project/[id]
+/admin/team           ↔ /team
 ```
 
-Admin UI is separate from the public-site visual system.
-
-If no admin Figma design is supplied, use a clean and functional interface rather than inventing an elaborate visual design.
+Each admin page is added together with its public page (§31). No dashboard or per-collection CRUD pages.
 
 ---
 
 ## 23. Admin Authentication
 
-Perform authorization on the server.
+Authorization is checked on the server: `src/proxy.ts` (first gate, cookie presence only) → `requireAdmin()` in `src/app/admin/(protected)/layout.tsx` and in **every** admin Server Action / Route Handler.
 
-Suggested environment variables:
+### Credentials (operator-managed, no env vars)
+- Admin username and password hash live in a **separate private Blob store** (env `AUTH_BLOB_STORE_ID`), file `data/admin-auth/vNNNNNN.json`, **latest version only**. Never in the public store, the public content keys (`DataKey`) or content services.
+- Content: `{ username, passwordHash ("scrypt:..."), sessionEpoch }`. Never a plaintext password; never log or display the password or the hash.
+- Modules are `server-only` (`lib/auth/account-store.ts`, `account-cache.ts`, `session.ts`, `password.ts`) — importing them from client code fails the build.
+- First account: `npm run admin:bootstrap` (developer, once). Forgotten password: `npm run admin:bootstrap -- --reset`. No web-based first-run setup.
+- Afterwards the admin changes username/password at `/admin/account` (admin-only page). Order: `requireAdmin()` → verify current password (required even for a username-only change; ~1 s delay on failure) → Zod → server-side scrypt hash → versioned save → new `sessionEpoch` → refresh account cache → delete cookie → `/admin/login?changed=1`.
 
-```text
-ADMIN_USERNAME
-ADMIN_PASSWORD_HASH
-SESSION_SECRET
-```
-
-Do not store a plaintext password.
-
-Use secure session cookies:
-- HttpOnly
-- Secure
-- SameSite
-
-Do not rely on client-side hiding of admin controls as authentication.
+### Sessions
+- Stateless HMAC-signed cookie (`SESSION_SECRET`, Vercel env, never editable in the admin UI): `{ sub, exp (8 h), epoch }`. HttpOnly, Secure (production), SameSite=Strict, no "keep me signed in".
+- `requireAdmin()` checks signature, expiry **and** that the token's epoch equals the account's current `sessionEpoch` (read from a server-side cache tagged `auth:admin`, 60 s max age). Any account change invalidates all sessions at once; a CLI reset takes effect within ~1 minute.
+- Login failure: ~1 s delay and one generic message for wrong ID or password. No lockout/IP blocking (no DB).
 
 ---
 
@@ -960,27 +995,19 @@ src/
 │   │   └── team/
 │   ├── admin/
 │   │   ├── login/
-│   │   ├── home/
-│   │   ├── awards/
-│   │   ├── projects/
-│   │   ├── professor/
-│   │   └── members/
+│   │   └── (protected)/   # mirrors (public): page.tsx (= /), award/[id], project, team
 │   └── api/
 ├── components/
-│   ├── public/
-│   ├── admin/
-│   └── common/
+│   ├── public/      # presentation components shared by public and admin pages
+│   ├── admin/       # AdminBar, edit/ (editing kit) — never imported by public pages
+│   └── common/      # design system: Logo, Button, form/Field
 ├── lib/
 │   ├── auth/
 │   ├── blob/
 │   ├── validation/
 │   └── utils/
-├── services/
-│   ├── home/
-│   ├── awards/
-│   ├── projects/
-│   ├── professor/
-│   └── members/
+├── services/        # content (cache), home, awards, projects, team
+├── styles/          # tokens.css, typography.css
 ├── types/
 └── config/
 ```
@@ -993,62 +1020,21 @@ Do not introduce unnecessary architectural complexity.
 
 ## 31. Development Phases
 
-### Phase 1
-Architecture and project structure
+Completed:
+- Architecture and project structure; Vercel Blob connection (OIDC); JSON schemas, defaults and versioned storage; admin authentication (proxy, `requireAdmin`, session, logout).
 
-### Phase 2
-Vercel Blob connection
+Current order (confirmed — each page is built as Public UI first, then its in-context editing on the same components):
 
-### Phase 3
-JSON schema and TypeScript types
+1. **Auth cleanup and AdminBar-based structure** — done
+2. **Common Header / Footer public UI** (GNB, hamburger panel, footer; GNB link mapping for admin; footer contact editing)
+3. **Image upload foundation** (`handleUploadPresigned` / `uploadPresigned`, validation, unique names, delete-after-save, ordering helpers)
+4. **Home public UI + Home editing** (introduction, Why A2F, research fields, award list/pagination)
+5. **Award Detail public UI + editing** (`/award/[id]`, `/award` → `/#award`)
+6. **Project List / Detail public UI + editing**
+7. **Team public UI + editing** (professor, students, alumni)
+8. **Responsive / animation / QA** (ani1–3 analysis first), then production deployment
 
-### Phase 4
-Admin authentication
-
-### Phase 5
-Home admin
-
-### Phase 6
-Award admin
-
-### Phase 7
-Project admin
-
-### Phase 8
-Professor admin
-
-### Phase 9
-Student / Alumni admin
-
-### Phase 10
-Image upload / delete / ordering
-
-### Phase 11
-Public data connection
-
-### Phase 12
-Figma MCP analysis
-
-### Phase 13
-1440 Desktop UI
-
-### Phase 14
-1920 Large Desktop UI
-
-### Phase 15
-768 Tablet UI
-
-### Phase 16
-365 Mobile UI
-
-### Phase 17
-Interactions and animation
-
-### Phase 18
-Responsive and functional QA
-
-### Phase 19
-Vercel production deployment
+Content migration from the legacy JSON happens when each page's data is first needed; legacy public pages are removed as their replacements land.
 
 ---
 
@@ -1057,36 +1043,22 @@ Vercel production deployment
 For each page:
 
 ```text
-Figma MCP analysis
+Figma MCP analysis (all four frames)
 ↓
-layout/token summary
+layout / token summary
 ↓
-component plan
+component plan (shared presentation components + admin composition points)
 ↓
-1440 implementation
+1440 → 1920 → 768 → 365
 ↓
-1920 implementation
-↓
-768 implementation
-↓
-365 implementation
+admin page: same components + editing kit
 ↓
 interaction implementation
 ↓
-QA
+QA (public and admin)
 ↓
 next page
 ```
-
-Recommended page order:
-1. Header / Navigation / Footer
-2. Home
-3. Award List
-4. Award Detail
-5. Project List
-6. Project Detail
-7. Team
-8. Admin UI
 
 ---
 
@@ -1125,14 +1097,13 @@ Review at minimum:
 VERCEL_OIDC_TOKEN      (preferred Blob auth; provided on Vercel, pulled locally via `vercel env pull`)
 BLOB_STORE_ID          (required with OIDC)
 BLOB_READ_WRITE_TOKEN  (fallback only)
-ADMIN_USERNAME
-ADMIN_PASSWORD_HASH
+AUTH_BLOB_STORE_ID     (private store for admin credentials; connect that store with prefix AUTH_BLOB)
 SESSION_SECRET
 NOTION_PUBLICATION_URL
 NEXT_PUBLIC_SITE_URL
 ```
 
-Prefer OIDC for Blob. Browser image uploads must use `handleUploadPresigned` / `uploadPresigned` (works with OIDC); the older `handleUpload` requires `BLOB_READ_WRITE_TOKEN`.
+Admin username/password are not environment variables (see §23). Prefer OIDC for Blob. Browser image uploads must use `handleUploadPresigned` / `uploadPresigned` (works with OIDC); the older `handleUpload` requires `BLOB_READ_WRITE_TOKEN`.
 
 Do not commit secrets.
 
@@ -1244,7 +1215,10 @@ Do not automatically proceed to the next major phase when approval is expected.
 - Phase 3 (schemas, defaults, versioned JSON storage — see §24/§25, `docs/DATA_MODEL.md`): done and verified on the dev store (freshness, concurrent saves, retention, rollback, Next cache invalidation). The dev store holds the initial documents for all six keys.
 - Accounts: development runs on the owner's GitHub (`swhwang81/a2f`) / Vercel / Blob; the finished site moves to the client's accounts later (see `todo.md` §11).
 - Figma MCP: connected (`.mcp.json`); SVG measurements verified and the resulting decisions recorded in §7A.
-- Existing public pages under `src/app/*.js` and `src/app/data/*.json` are legacy: leave them unchanged (including their lint errors) until they are replaced in the UI phases.
+- Phase 4 (admin authentication): done and verified on a production build. Root `src/app/layout.tsx` = html/body, fonts (Hanken via next/font, Pretendard CDN), `styles/tokens.css`, `styles/typography.css`, globals; public chrome in `src/app/(public)/layout.tsx`; admin in `src/app/admin/` (`login/`, `(protected)/` guarded by `requireAdmin()` and showing `AdminBar`, `(protected)/account/`); first gate in `src/proxy.ts`. `SESSION_SECRET` is set in Vercel for all three environments.
+- Admin credentials moved from env vars to the private Blob store (§23): code done (`versioned-store` factory shared with content, `account-store`, epoch-based session invalidation, `/admin/account`, `npm run admin:bootstrap`). Private store `a2f-dev-private` connected; verified on a production build (24 checks: login, current-password checks, username-only and password changes, all sessions invalidated, logout; anonymous access 403). The test account was deleted — the private store is empty until the owner runs `npm run admin:bootstrap`.
+- Admin direction changed to in-context editing (§7C) and the phase order to page-by-page "public UI + editing" (§31). Step 1 (auth cleanup + AdminBar structure) is done; `/admin` shows a placeholder until the Home step. Shared design system so far: tokens, typography, fonts, `Logo` (Figma assets in `src/assets/brand/`), `Button`, `form/Field`.
+- Existing public pages under `src/app/(public)/*.js` and `src/app/(public)/data/*.json` are legacy: leave them unchanged (including their lint errors) until they are replaced in the UI phases.
 - Not yet decided: ffmpeg installation (decide before the animation phase).
 
-Do not start Public UI or animation work without explicit approval of that phase.
+Next: step 2 (common Header / Footer public UI). Do not start Public UI or animation work without explicit approval of that step.
