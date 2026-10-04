@@ -162,9 +162,10 @@
 - [x] Award 카드 링크 비활성 (`AWARD_DETAIL_AVAILABLE`, Step 5에서 켬)
 - [x] 커밋 & push
 
-**4b (애니메이션)** — 4a 승인 후
-- [ ] ani1 Award hover (라벨 초록 배경 wipe + 날짜 등장, 1440/1920)
-- [ ] ani3 Home scroll (CSS scroll-driven 1차, 1920 정확 / 1440 조정 / 768 단순화 / 365 없음, reduced-motion·미지원 브라우저 = 정적)
+**4b (애니메이션)** — 승인 (2026-10-04). Admin Home은 ani3 끔(항상 최종 배치), ani1은 유지
+- [x] ani1 Award hover/focus (1440/1920): 흰 글자+초록 박스 wipe 0.4s ease-out, 마지막 0.1s에 ■·날짜 등장, mouse-out 0.2s 역방향. reduced motion = 즉시 상태 변경
+- [x] ani3 Home scroll (CSS scroll-driven, JS 없음): 1920 시작 -185px + 아래 블록 일부만 보임 → 750px 스크롤 동안 최종 배치로, 1440 -110px/500px, 768 -60px/350px(이동만), 365·reduced motion·미지원 브라우저 = 정적 최종 배치
+- [ ] 커밋 & push
 
 ### 새 단계 5. Award Detail Public UI + 편집
 - [ ] 상세 페이지 검증 후 `AWARD_DETAIL_AVAILABLE = true` (Home 카드 링크 활성)

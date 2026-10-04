@@ -13,8 +13,9 @@ type Props = {
 
 const POSITION_CLASS = [styles.position0, styles.position1, styles.position2];
 
-// Award & Activity card. The date shows on hover/keyboard focus from 1440 up (Figma "Hover"),
-// and always below 1440 (no hover on touch screens). Without `href` the card is not a link.
+// Award & Activity card. From 1440 up the hover/keyboard-focus state (Figma "Hover type 1",
+// a2f_ani1.mp4) wipes the label to white-on-green and reveals the date; below 1440 the date is
+// always shown (no hover on touch screens). Without `href` the card is not a link.
 export default function AwardCard({ award, href, position }: Props) {
   const image = award.images[0];
   const className = `${styles.card} ${POSITION_CLASS[position % POSITION_CLASS.length]}`;
@@ -36,12 +37,18 @@ export default function AwardCard({ award, href, position }: Props) {
         <span>{award.title}</span>
       </p>
       <p className={styles.labelRow}>
-        <span className={styles.label}>{award.label}</span>
-        <span className={styles.dateGroup}>
-          <span className={styles.dot} aria-hidden="true" />
-          <time className={styles.date} dateTime={award.date}>
-            {formatDisplayDate(award.date)}
-          </time>
+        <span className={styles.label}>
+          {award.label}
+          {/* ani1: the same text in white on green, wiped in over the label (1440+) */}
+          <span className={styles.labelWipe} aria-hidden="true">
+            {award.label}
+          </span>
+          <span className={styles.dateGroup}>
+            <span className={styles.dot} aria-hidden="true" />
+            <time className={styles.date} dateTime={award.date}>
+              {formatDisplayDate(award.date)}
+            </time>
+          </span>
         </span>
       </p>
       {award.body && <p className={styles.body}>{award.body}</p>}

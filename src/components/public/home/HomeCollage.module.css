@@ -124,3 +124,94 @@
   .intro0 { top: 0%; left: 50.872%; width: 21.977%; }
   .intro1 { top: 81.38%; left: 25.407%; width: 23.721%; }
 }
+
+/*
+ * ani3 — Home scroll (a2f_ani3.mp4 / Figma "A2F - Home (Scroll)" 0:2642, motion reference only;
+ * the end state is the layout above).
+ * Start (scroll 0): the whole collage sits higher, compressed under the headline (Figma 1920:
+ * 185px up — every visible block and the first paragraph keep their x and move up by the same
+ * amount), and the lower blocks are only partly revealed: centre photo 6%, tall photo 32.5%,
+ * lower-left black block and second paragraph hidden.
+ * Scrolling: the collage moves down to its final place (so it rises more slowly than the page)
+ * while each lower block unrolls downwards — different amounts, so they spread at different
+ * speeds. Done when the collage top reaches the header.
+ * 1920: Figma values. 1440: same pattern, offset scaled to the 1440 headline gap (180 → start
+ * gap ~70). 768: simplified (settle only). 365, reduced motion, browsers without scroll-driven
+ * animations: the static final layout.
+ * A wrapping page can switch the motion off with `--scroll-motion-timeline: none` (an animation
+ * without a timeline is inactive → final layout); the admin Home does this.
+ */
+@keyframes collage-settle {
+  from {
+    translate: 0 var(--settle-from);
+  }
+}
+
+/* Ends at `none` (not inset(0)) so nothing is clipped afterwards; the 99.9% step keeps the
+   reveal continuous (none cannot be interpolated from inset()). */
+@keyframes collage-reveal {
+  from {
+    clip-path: inset(0 0 var(--reveal-from) 0);
+  }
+
+  99.9% {
+    clip-path: inset(0);
+  }
+
+  to {
+    clip-path: none;
+  }
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .collage {
+      --settle-from: -60px;
+      --settle-end: 350px;
+
+      animation: collage-settle linear both;
+      animation-timeline: var(--scroll-motion-timeline, scroll(root));
+      animation-range: 0 var(--settle-end);
+    }
+  }
+}
+
+@media (min-width: 1440px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .collage {
+      --settle-from: -110px;
+      --settle-end: 500px;
+    }
+
+    .photo1,
+    .photo2,
+    .black1,
+    .intro1 {
+      animation: collage-reveal linear both;
+      animation-timeline: var(--scroll-motion-timeline, scroll(root));
+      animation-range: 0 var(--settle-end);
+    }
+
+    .photo1 {
+      --reveal-from: 94%;
+    }
+
+    .photo2 {
+      --reveal-from: 67.5%;
+    }
+
+    .black1,
+    .intro1 {
+      --reveal-from: 100%;
+    }
+  }
+}
+
+@media (min-width: 1920px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .collage {
+      --settle-from: -185px;
+      --settle-end: 750px;
+    }
+  }
+}

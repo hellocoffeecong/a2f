@@ -1,5 +1,6 @@
 /*
  * Figma Award card: 365 0:1268 / 768 0:1685 / 1440 0:2273 / 1920 0:276 (+ "Hover type 1" 0:2757).
+ * Label row: label, then (date group) square + date.
  * Image height differs per breakpoint and per position in the row (cover crop).
  */
 .card {
@@ -65,11 +66,6 @@
 }
 
 .labelRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-
-  column-gap: 10px;
   margin: 6px 0 0;
 
   font-family: var(--font-en);
@@ -81,11 +77,20 @@
   color: var(--color-green);
 }
 
+.labelWipe {
+  display: none;
+}
+
+/* Below 1440 the date follows the label (and wraps with it as one unit). */
 .dateGroup {
   display: inline-flex;
   align-items: center;
 
   gap: 10px;
+  margin-left: 10px;
+
+  white-space: nowrap;
+  vertical-align: top;
 }
 
 .dot {
@@ -187,36 +192,86 @@
     line-height: 24px;
   }
 
-  /* Date hidden until hover/focus (kept for screen readers). */
-  .dateGroup {
-    position: absolute;
-
-    width: 1px;
-    height: 1px;
+  /*
+   * ani1 (a2f_ani1.mp4 / Figma 0:2757). Hover in: the green box with white text wipes in from
+   * the left (~0.4 s, easing out); in its last ~0.1 s the date and the square appear, sliding a
+   * few px into place. Hover out: the same, reversed and quicker.
+   * The row starts 2px left so the label text keeps the card edge while its box has 2px padding;
+   * the date sits right of the label, outside the flow (no layout shift), clipped by the row.
+   */
+  .labelRow {
+    margin-left: -2px;
+    padding-left: 2px;
 
     overflow: hidden;
-
-    clip-path: inset(50%);
   }
 
-  .card:hover .dateGroup,
-  .card:focus-visible .dateGroup {
-    position: static;
+  .label {
+    position: relative;
 
-    width: auto;
-    height: auto;
+    display: inline-block;
 
-    overflow: visible;
-
-    clip-path: none;
+    padding: 0 2px;
   }
 
-  .card:hover .label,
-  .card:focus-visible .label {
+  .labelWipe {
+    position: absolute;
+    inset: 0;
+
+    display: block;
+
     padding: 0 2px;
 
     color: var(--color-white);
     background: var(--color-green);
+
+    clip-path: inset(0 100% 0 0);
+
+    transition: clip-path 0.2s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+
+  .dateGroup {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 8px);
+
+    margin-left: 0;
+
+    opacity: 0;
+    transform: translateX(-6px);
+
+    transition:
+      opacity 0.1s linear,
+      transform 0.1s ease-in;
+  }
+
+  .card:hover .labelWipe,
+  .card:focus-visible .labelWipe {
+    clip-path: inset(0);
+
+    transition: clip-path 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .card:hover .dateGroup,
+  .card:focus-visible .dateGroup {
+    opacity: 1;
+    transform: none;
+
+    transition:
+      opacity 0.12s linear 0.3s,
+      transform 0.15s ease-out 0.28s;
+  }
+}
+
+/* Reduced motion: same states, no movement. */
+@media (min-width: 1440px) and (prefers-reduced-motion: reduce) {
+  .labelWipe,
+  .dateGroup,
+  .card:hover .labelWipe,
+  .card:hover .dateGroup,
+  .card:focus-visible .labelWipe,
+  .card:focus-visible .dateGroup {
+    transition: none;
   }
 }
 
