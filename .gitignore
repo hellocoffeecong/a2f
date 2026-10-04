@@ -32,6 +32,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# local analysis output (e.g. animation frame extraction)
+/.tmp/
+
+# Blob store exports made by scripts/blob-migrate.mjs (contain live data)
+/migration-data/
+
+# design reference files (SVG / PDF / MP4) are shared outside the repository
+/references/
 
 # vercel
 .vercel
