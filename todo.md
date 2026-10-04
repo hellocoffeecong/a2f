@@ -152,12 +152,22 @@
 - [ ] 커밋 & push
 
 ### 새 단계 4. Home Public UI + Home 편집
-- [ ] Main Visual(정적 레이아웃, 애니메이션은 단계 8), Introduction, Why A2F, Research Fields(6개 고정, 아이콘 코드 고정), Award & Activity 목록(필터·페이지네이션, 크기별 페이지당 카드 수), 하단 연락처
-- [ ] Admin `/admin`: 같은 컴포넌트 + 문단·Research Field 텍스트 인라인 편집, Award 항목 추가/삭제/정렬(`EditPanel`)
-- [ ] 기존 Home 데이터의 텍스트를 새 스키마로 이전, 이미지는 원본 재업로드 (예전 store 삭제로 기존 이미지 404)
-- [ ] 기존 `(public)/page.js` 교체
+**4a (정적 UI + 편집)** — 승인 (2026-10-04)
+- [x] Main Visual(정적), Introduction, Why A2F, Research Fields(6개 고정, 아이콘 코드 고정), Award & Activity(필터·페이지네이션·크기별 카드 수), 하단 연락처 — 365/768/1440/1920 Figma 비교
+- [x] `home.json`에 `visuals` (main 3칸, secondary 2칸) 추가, 콜라주 사진 5장은 Admin 이미지 변경으로 업로드 (Figma 목업 = 임시 콘텐츠). 검은 블록 2개는 고정 장식
+- [x] Admin `/admin`: 문단·Why·Research Field·연락처 인라인 편집, 사진 교체, Award 추가/수정/삭제(`EditPanel`, `ListControls`, 삭제 확인)
+- [x] 기존 `(public)/page.js`와 전역 Home 스타일 삭제
+- [x] 768에도 Contact 표시 (Figma 768 누락으로 판단)
+- [x] 검증용 Award 샘플 삭제 → awards.json 빈 목록 (새 버전으로 저장)
+- [x] Award 카드 링크 비활성 (`AWARD_DETAIL_AVAILABLE`, Step 5에서 켬)
+- [x] 커밋 & push
+
+**4b (애니메이션)** — 4a 승인 후
+- [ ] ani1 Award hover (라벨 초록 배경 wipe + 날짜 등장, 1440/1920)
+- [ ] ani3 Home scroll (CSS scroll-driven 1차, 1920 정확 / 1440 조정 / 768 단순화 / 365 없음, reduced-motion·미지원 브라우저 = 정적)
 
 ### 새 단계 5. Award Detail Public UI + 편집
+- [ ] 상세 페이지 검증 후 `AWARD_DETAIL_AVAILABLE = true` (Home 카드 링크 활성)
 - [ ] `/award/[id]` (2열 space-between + 최소 300 세로 간격, People 최대 4명), `/award` → `/#award`
 - [ ] Admin `/admin/award/[id]`: 본문 인라인, 이미지 변경·순서, People `EditPanel`
 

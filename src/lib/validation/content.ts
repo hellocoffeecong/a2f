@@ -7,6 +7,7 @@ import {
   PROJECT_CATEGORIES,
   TEAM_DEGREES,
 } from "@/config/content";
+import { HOME_VISUAL_SLOTS } from "@/config/home";
 import type { DataKey } from "@/config/storage";
 import {
   dateSchema,
@@ -29,8 +30,27 @@ export const researchFieldSchema = z.object({
   order: z.number().int().nonnegative(),
 });
 
-// Admin-editable Home text only. Logo, navigation labels, research field icons and
-// decorative elements are fixed in code. Footer/contact text lives in settings.json.
+// Collage photo slots (positions are fixed in code, see config/home). An empty slot is null.
+const visualSlots = (count: number) => z.array(imageRefSchema.nullable()).length(count);
+
+// Versions saved during step 4a had 5 main slots, the first two under the black blocks
+// (now decoration); they read as the 3 photo slots.
+const LEGACY_MAIN_SLOTS = 5;
+const dropLegacyBlackSlots = (value: unknown) =>
+  Array.isArray(value) && value.length === LEGACY_MAIN_SLOTS ? value.slice(LEGACY_MAIN_SLOTS - HOME_VISUAL_SLOTS.main) : value;
+
+export const homeVisualsSchema = z.object({
+  main: z.preprocess(dropLegacyBlackSlots, visualSlots(HOME_VISUAL_SLOTS.main)),
+  secondary: visualSlots(HOME_VISUAL_SLOTS.secondary),
+});
+
+const emptyVisuals = () => ({
+  main: Array<null>(HOME_VISUAL_SLOTS.main).fill(null),
+  secondary: Array<null>(HOME_VISUAL_SLOTS.secondary).fill(null),
+});
+
+// Admin-editable Home content. Logo, headline, navigation labels, research field icons and
+// decorative blocks are fixed in code. Footer/contact text lives in settings.json.
 export const homeSchema = z.object({
   introduction: z.object({
     paragraphs: z.array(requiredText),
@@ -42,6 +62,8 @@ export const homeSchema = z.object({
     description: optionalText,
   }),
   researchFields: z.array(researchFieldSchema).length(LIMITS.researchFields),
+  // Versions saved before the collage photos existed read as all-empty slots.
+  visuals: homeVisualsSchema.default(emptyVisuals),
 });
 
 // Award & Activity ------------------------------------------------------

@@ -1,0 +1,126 @@
+/*
+ * Figma main collage: 365 0:1157 (325×350) / 768 0:1552 (708×725) / 1440 0:2137 (1280×626)
+ * / 1920 0:140 (1720×913). Slot positions are the Figma coordinates in % of the collage.
+ * black0 and the second paragraph exist from 1440 up; the blue block from 768 up.
+ */
+.collage {
+  position: relative;
+
+  aspect-ratio: 325 / 350;
+}
+
+.block,
+.text {
+  position: absolute;
+}
+
+.gradient {
+  background: linear-gradient(to bottom, var(--color-green), var(--color-white));
+}
+
+.blue {
+  display: none;
+
+  background: #c8d8f2;   /* Figma fill over Rectangle 161124362 */
+}
+
+/* Figma: photo under an opaque black fill (Rectangle 161124336 / 161124331) = black block. */
+.black0,
+.black1 {
+  background: var(--color-black);
+}
+
+.black0,
+.intro1 {
+  display: none;
+}
+
+.paragraph {
+  margin: 0;
+
+  font-family: var(--font-en);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 17px;
+  letter-spacing: var(--tracking-en);
+
+  color: var(--color-black);
+}
+
+/* 365 */
+.gradient { top: 0%; left: 39.692%; width: 29.846%; height: 36.857%; }
+.black1 { top: 88%; left: 0%; width: 17.231%; height: 12%; }
+.photo0 { top: 18.571%; left: 52%; width: 48%; height: 28.286%; }
+.photo1 { top: 57.429%; left: 12.923%; width: 30.769%; height: 22%; }
+.photo2 { top: 8.571%; left: 0%; width: 30.462%; height: 40.286%; }
+.intro0 { top: 55.429%; left: 52%; width: 48%; }
+
+@media (min-width: 768px) {
+  .collage {
+    aspect-ratio: 708 / 725;
+  }
+
+  .blue {
+    display: block;
+  }
+
+  .paragraph {
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  .gradient { top: 0%; left: 37.853%; width: 31.497%; height: 40.966%; }
+  .blue { top: 80.276%; left: 39.124%; width: 10.169%; height: 3.31%; }
+  .black1 { top: 87.448%; left: 0%; width: 17.09%; height: 12.552%; }
+  .photo0 { top: 19.586%; left: 51.412%; width: 48.588%; height: 30.069%; }
+  .photo1 { top: 58.345%; left: 12.853%; width: 31.356%; height: 23.586%; }
+  .photo2 { top: 8.966%; left: 0%; width: 31.497%; height: 43.862%; }
+  .intro0 { top: 55.172%; left: 51.412%; width: 48.588%; }
+}
+
+@media (min-width: 1440px) {
+  .collage {
+    aspect-ratio: 1280 / 626;
+  }
+
+  .black0,
+  .intro1 {
+    display: block;
+  }
+
+  .paragraph {
+    font-size: 17px;
+    line-height: 21px;
+  }
+
+  .gradient { top: 10.383%; left: 25.469%; width: 16.953%; height: 29.073%; }
+  .blue { top: 34.665%; left: 63.75%; width: 8.281%; height: 4.792%; }
+  .black0 { top: 0%; left: 77.969%; width: 22.031%; height: 39.457%; }
+  .black1 { top: 47.444%; left: 8.516%; width: 15.078%; height: 32.428%; }
+  .photo0 { top: 21.406%; left: 0%; width: 19.688%; height: 18.051%; }
+  .photo1 { top: 37.061%; left: 33.984%; width: 23.594%; height: 30.831%; }
+  .photo2 { top: 37.061%; left: 67.891%; width: 21.641%; height: 62.939%; }
+  .intro0 { top: 0%; left: 49.062%; width: 19.688%; }
+  .intro1 { top: 78.914%; left: 28.75%; width: 19.688%; }
+}
+
+@media (min-width: 1920px) {
+  .collage {
+    aspect-ratio: 1720 / 913;
+  }
+
+  .paragraph {
+    font-size: 22px;
+    line-height: 34px;
+  }
+
+  .gradient { top: 10.077%; left: 25.407%; width: 16.977%; height: 27.711%; }
+  .blue { top: 33.406%; left: 61.86%; width: 8.488%; height: 4.381%; }
+  .black0 { top: 0%; left: 76.279%; width: 23.721%; height: 37.788%; }
+  .black1 { top: 45.455%; left: 6.744%; width: 14.942%; height: 31.435%; }
+  .photo0 { top: 20.701%; left: 0%; width: 21.686%; height: 17.087%; }
+  .photo1 { top: 35.597%; left: 33.895%; width: 23.721%; height: 28.587%; }
+  .photo2 { top: 35.597%; left: 67.849%; width: 21.686%; height: 58.05%; }
+  .intro0 { top: 0%; left: 50.872%; width: 21.977%; }
+  .intro1 { top: 81.38%; left: 25.407%; width: 23.721%; }
+}

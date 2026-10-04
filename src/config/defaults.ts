@@ -71,6 +71,11 @@ export const DEFAULT_CONTENT: { [K in DataKey]: DocumentContent<K> } = {
           order: 6,
         },
       ],
+      // Photos are uploaded through the admin (Figma mockup photos are placeholders, not seeded).
+      visuals: {
+        main: [null, null, null],
+        secondary: [null, null],
+      },
     },
   },
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import Button from "@/components/common/Button";
 import styles from "./ConfirmDialog.module.css";
 
@@ -17,6 +17,7 @@ type Props = {
 // inert background come from the browser.
 export default function ConfirmDialog({ open, title, message, confirmLabel = "삭제", onConfirm, onCancel }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -26,8 +27,8 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "�
   }, [open]);
 
   return (
-    <dialog ref={ref} className={styles.dialog} onCancel={onCancel} aria-labelledby="confirm-title">
-      <h2 id="confirm-title" className={styles.title}>
+    <dialog ref={ref} className={styles.dialog} onCancel={onCancel} aria-labelledby={titleId}>
+      <h2 id={titleId} className={styles.title}>
         {title}
       </h2>
       {message && <p className={styles.message}>{message}</p>}

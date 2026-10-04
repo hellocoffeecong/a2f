@@ -68,8 +68,8 @@ images/<kind>/<entityId>/<uuid>.<ext>
 
 ## 2. home (단일 객체)
 
-관리자가 수정: 소개 문단, Why A2F 문구, Research Field 6개의 제목/소제목/설명.
-코드 고정: 로고, 메인 문구("Approach 2 Flux, Access 2 Frame"), 내비게이션, Research Field 아이콘, 장식 요소.
+관리자가 수정: 소개 문단, Why A2F 문구, Research Field 6개의 제목/소제목/설명, 콜라주 사진 5칸.
+코드 고정: 로고, 메인 문구("Approach 2 Flux, Access 2 Frame"), 내비게이션, Research Field 아이콘, 장식 요소(초록 그라데이션·하늘색 블록·검은 블록 2개), 사진 칸의 위치.
 
 | 필드 | 타입 | 규칙 |
 |---|---|---|
@@ -83,6 +83,12 @@ images/<kind>/<entityId>/<uuid>.<ext>
 | `researchFields[].subtitle` | string | 한글 소제목 |
 | `researchFields[].description` | string | 한글 설명 |
 | `researchFields[].order` | number | 표시 순서 |
+| `visuals.main` | (ImageRef \| null)[] | **정확히 3칸**. 0 왼쪽 가로 사진, 1 가운데, 2 오른쪽 세로 사진 — [src/config/home.ts](../src/config/home.ts) |
+| `visuals.secondary` | (ImageRef \| null)[] | **정확히 2칸**. 0 왼쪽 세로 사진, 1 오른쪽 사진 (Research Fields와 Award 사이) |
+
+- 빈 칸은 `null` (자리는 유지, 연한 회색 배경). 이미지는 `images/home/` 아래만 허용.
+- `visuals`가 없는 예전 버전은 읽을 때 빈 칸으로 채워진다 (롤백 가능).
+- Step 4a 중 저장된 5칸 `main`(앞 2칸 = 지금은 장식인 검은 블록)은 읽을 때 뒤 3칸만 사용한다.
 
 ```json
 {
@@ -93,7 +99,11 @@ images/<kind>/<entityId>/<uuid>.<ext>
     "why": { "statementLead": "We study", "statement": "design activity ...", "description": "한글 설명" },
     "researchFields": [
       { "id": "field-01", "title": "Field Title", "subtitle": "한글 소제목", "description": "설명", "order": 1 }
-    ]
+    ],
+    "visuals": {
+      "main": [{ "url": "https://…/images/home/main-0/….png", "pathname": "images/home/main-0/….png", "width": 640, "height": 1050, "alt": "" }, null, null],
+      "secondary": [null, null]
+    }
   }
 }
 ```

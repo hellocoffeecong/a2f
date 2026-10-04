@@ -14,12 +14,13 @@ type Props = {
   initialValue: string;
   hint?: string;
   multiline?: boolean;
+  compact?: boolean; // narrow regions inside the page grid (no page side padding)
   onSave: (value: string) => Promise<SaveOutcome>;
 };
 
 // Simple text editing in place: input/textarea + 저장 / 취소. On success the editor closes
 // and the page re-renders with the saved content.
-export default function InlineTextEditor({ label, initialValue, hint, multiline = false, onSave }: Props) {
+export default function InlineTextEditor({ label, initialValue, hint, multiline = false, compact = false, onSave }: Props) {
   const { close } = useEditable();
   const router = useRouter();
   const [value, setValue] = useState(initialValue);
@@ -40,7 +41,7 @@ export default function InlineTextEditor({ label, initialValue, hint, multiline 
 
   return (
     <form
-      className={styles.editor}
+      className={`${styles.editor} ${compact ? styles.compact : ""}`}
       onSubmit={(event) => {
         event.preventDefault();
         save();

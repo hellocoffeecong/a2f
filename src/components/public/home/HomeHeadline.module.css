@@ -1,0 +1,30 @@
+/* Figma "Union" (headline): 365 269×65 / 768 465×108 / 1440 737×173 / 1920 991×232. */
+.headline {
+  margin: 0;
+}
+
+.image {
+  display: block;
+
+  width: 269px;
+  max-width: 100%;
+  height: auto;
+}
+
+@media (min-width: 768px) {
+  .image {
+    width: 465px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .image {
+    width: 737px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .image {
+    width: 991px;
+  }
+}

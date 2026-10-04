@@ -3,6 +3,7 @@ import { Hanken_Grotesk } from "next/font/google";
 import type { ReactNode } from "react";
 import "@/styles/tokens.css";
 import "@/styles/typography.css";
+import "@/styles/utilities.css";
 import "./globals.css";
 
 // A2F Design System fonts, shared by the public site and the admin.

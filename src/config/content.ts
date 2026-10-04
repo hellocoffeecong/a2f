@@ -29,3 +29,7 @@ export const LIMITS = {
 } as const;
 
 export const PROJECT_PAGE_SIZE = 9;
+
+// Award detail pages (/award/[id]) arrive in step 5. Until they exist and are verified, award
+// cards do not link anywhere (no 404 links on the public site).
+export const AWARD_DETAIL_AVAILABLE = false;

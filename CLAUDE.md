@@ -288,6 +288,21 @@ These were confirmed by the project owner after Figma MCP verification. They tak
 - Award filter (All / Award / Activity): shown at 768 / 1440 / 1920 per Figma. Not shown at 365 (the empty 365 frame is unfinished UI).
 - Keep filter and page state in query parameters where practical.
 - No separate `/award` list page: `/award` redirects to `/#award`; only `/award/[id]` exists.
+- Step 4 decisions (owner-approved):
+  - Why A2F description: one canonical text (the long version in defaults). Figma's shorter 1440/768 copy is a layout abbreviation — no per-breakpoint text, no `shortDescription`.
+  - Introduction: data keeps both paragraphs; 1440/1920 show two, 365/768 only the first (CSS).
+  - Research Fields: 365 shows title + icon + subtitle; the description appears from 768 (data always kept).
+  - Collage photos are data: `home.visuals.main` (3 slots) / `secondary` (2 slots), positions fixed in code (`src/config/home.ts`). The two black blocks are fixed decoration (Figma's black fill is opaque, so no photo would show) — no upload for them. The green gradient and light-blue blocks are CSS decoration too. The current Figma mockup photos are placeholder content.
+  - Contact is shown at all four breakpoints. The 768 Home frame omits it (treated as an omission); 768 uses the 768 section-title size (36/37) and en) B1 (18/28).
+  - The long Why A2F text makes the following sections sit 24–42px lower than Figma (365/768/1440; 1920 matches). Intended — do not switch to the Figma short copy.
+  - Headline: Figma SVG lettering per breakpoint, not editable, with a visually hidden real `<h1>`.
+  - Award card image box: Figma height per breakpoint and per position in the row, `object-fit: cover`.
+  - Award date: 1440/1920 on hover or keyboard focus (ani1); 365/768 always shown (label ■ date, no green box).
+  - Award cards do not link until `/award/[id]` exists and is verified (`AWARD_DETAIL_AVAILABLE` in `src/config/content.ts`, step 5). Without a link the card is a focusable `<article>`.
+  - Approved small choices: "All" has no icon; pagination hidden for a single page; an empty filter result leaves the list empty on the public site (the admin shows a short note); empty photo slot = `#FAFAFA`; research icons centred; all research cards `#F3F3F3` → white.
+  - No awards: the public page hides the whole section; the admin keeps it with "등록된 항목이 없습니다" + [추가].
+  - Filter (Figma open state 0:2325 / 0:326 / 0:1721): the button shows the selected option, with the type icon for Award/Activity (All has none); options are text only, all green.
+  - ani3 is a motion reference only (start state, vertical parallax, per-element speed, spread, pinned header); the final positions are the current Figma Home layout.
 
 ### Project list
 - Not Masonry. Each row is its own aligned row; row height = tallest card in that row.
@@ -1230,4 +1245,6 @@ Do not automatically proceed to the next major phase when approval is expected.
 
 - Step 3 (image upload foundation): done — §27. Verified on the dev store (UI 23, HTTP security 15, retention/orphan 11 checks); the temporary test page was removed.
 
-Next: step 4 (Home public UI + Home editing). Do not start Public UI or animation work without explicit approval of that step.
+- Step 4a (Home static UI + Home in-context editing): approved and cleaned up (Contact at 768, black blocks as decoration, sample awards removed — awards.json is an empty list again, card links off until step 5). Implemented — `components/public/home/` (HomeMain, HomeHeadline, HomeCollage, HomeVisual, WhySection, ResearchFieldGrid, HomeGallery, AwardSection, ContactSection), `components/public/award/` (AwardCard, AwardTypeIcon), `components/public/ui/` (FilterDropdown, Pagination, useMediaQuery); admin `/admin` composes the same sections with `Editable`, `InlineFieldsEditor`, `ImageReplace` (fill), `EditPanel`, `ListControls` and the actions in `admin/(protected)/{home,award,settings}-actions.ts`. `home.json` gained `visuals`. The legacy `(public)/page.js` and its global styles were removed. `next.config.mjs` sets `agentRules: false` (otherwise `next dev` appends its own block to this file).
+
+Next: step 4b (ani1 Award hover, ani3 Home scroll), approved.

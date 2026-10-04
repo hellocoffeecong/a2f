@@ -1,14 +1,92 @@
 import type { Metadata } from "next";
-import styles from "./page.module.css";
+import Editable from "@/components/admin/edit/Editable";
+import AdminAwardSection from "@/components/admin/editors/AdminAwardSection";
+import ContactEditor from "@/components/admin/editors/ContactEditor";
+import { IntroParagraphEditor, ResearchFieldEditor, WhyEditor } from "@/components/admin/editors/HomeTextEditors";
+import HomeVisualReplace from "@/components/admin/editors/HomeVisualReplace";
+import ContactSection from "@/components/public/home/ContactSection";
+import HomeCollage from "@/components/public/home/HomeCollage";
+import HomeGallery from "@/components/public/home/HomeGallery";
+import HomeHeadline from "@/components/public/home/HomeHeadline";
+import HomeMain from "@/components/public/home/HomeMain";
+import ResearchFieldGrid from "@/components/public/home/ResearchFieldGrid";
+import WhySection from "@/components/public/home/WhySection";
+import { DEFAULT_CONTENT } from "@/config/defaults";
+import { readDocument } from "@/lib/blob/json-store";
+import { sortAwardsNewestFirst } from "@/services/awards";
+import { orderHomeContent } from "@/services/home";
 
 export const metadata: Metadata = { title: "Home 편집" };
 
-// Placeholder until the Figma-based Home UI exists (new phase 4: Home Public UI + editing).
-// Then this page renders the shared Home presentation components with editing controls.
-export default function AdminHomePage() {
+// /admin = the public Home (same section components) with editing composed around it.
+// Reads the latest stored versions, not the public cache; each editor saves against the
+// version shown here (a newer save by someone else is reported as a conflict).
+export default async function AdminHomePage() {
+  const [homeDoc, awardsDoc, settingsDoc] = await Promise.all([
+    readDocument("home"),
+    readDocument("awards"),
+    readDocument("settings"),
+  ]);
+  const home = orderHomeContent(homeDoc?.document.data ?? DEFAULT_CONTENT.home.data);
+  const homeVersion = homeDoc?.document.version ?? 0;
+  const awards = sortAwardsNewestFirst(awardsDoc?.document.items ?? []);
+  const contact = (settingsDoc?.document.data ?? DEFAULT_CONTENT.settings.data).contact;
+  const settingsVersion = settingsDoc?.document.version ?? 0;
+
   return (
-    <main className={styles.page}>
-      <p className={styles.notice}>Home 편집 화면은 Home Public UI 구현과 함께 제공됩니다.</p>
-    </main>
+    <HomeMain>
+      <HomeHeadline />
+      <HomeCollage
+        visuals={home.visuals.main}
+        paragraphs={home.introduction.paragraphs}
+        renderVisual={(index, visual) => (
+          <HomeVisualReplace group="main" index={index} version={homeVersion}>
+            {visual}
+          </HomeVisualReplace>
+        )}
+        renderParagraph={(index, paragraph) => (
+          <Editable
+            label={`소개 문단 ${index + 1}`}
+            editor={<IntroParagraphEditor index={index} value={home.introduction.paragraphs[index]} version={homeVersion} />}
+          >
+            {paragraph}
+          </Editable>
+        )}
+      />
+      <WhySection
+        why={home.why}
+        renderText={(text) => (
+          <Editable label="Why A2F 문구" editor={<WhyEditor why={home.why} version={homeVersion} />}>
+            {text}
+          </Editable>
+        )}
+      >
+        <ResearchFieldGrid
+          fields={home.researchFields}
+          renderCard={(field, card) => (
+            <Editable label={`연구 분야 ${field.title}`} editor={<ResearchFieldEditor field={field} version={homeVersion} />}>
+              {card}
+            </Editable>
+          )}
+        />
+      </WhySection>
+      <HomeGallery
+        visuals={home.visuals.secondary}
+        renderVisual={(index, visual) => (
+          <HomeVisualReplace group="secondary" index={index} version={homeVersion}>
+            {visual}
+          </HomeVisualReplace>
+        )}
+      />
+      <AdminAwardSection awards={awards} version={awardsDoc?.document.version ?? 0} />
+      <ContactSection
+        contact={contact}
+        renderDetails={(details) => (
+          <Editable label="연락처" editor={<ContactEditor contact={contact} version={settingsVersion} />}>
+            {details}
+          </Editable>
+        )}
+      />
+    </HomeMain>
   );
 }

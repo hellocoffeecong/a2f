@@ -30,6 +30,7 @@ export type MemberType = (typeof MEMBER_TYPES)[number];
 export type ImageRef = z.infer<typeof imageRefSchema>;
 export type ResearchField = z.infer<typeof researchFieldSchema>;
 export type HomeContent = z.infer<typeof homeSchema>;
+export type HomeVisuals = HomeContent["visuals"];
 export type AwardPerson = z.infer<typeof awardPersonSchema>;
 export type Award = z.infer<typeof awardSchema>;
 export type ProjectMember = z.infer<typeof projectMemberSchema>;
