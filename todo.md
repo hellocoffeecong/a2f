@@ -142,10 +142,14 @@
 - [ ] Publication Notion URL 확정 시 Vercel에 `NOTION_PUBLICATION_URL` 설정 (지금은 메뉴 비활성 표시)
 - [ ] 커밋 & push
 
-### 새 단계 3. 이미지 업로드 기반
-- [ ] `handleUploadPresigned` + `uploadPresigned` (OIDC 지원 방식), `BLOB_WEBHOOK_PUBLIC_KEY` 동작 확인
-- [ ] MIME·확장자·10MB 검증, UUID 파일명, 업로드 시 width/height 저장
-- [ ] JSON 저장 성공 후에만 Blob 이미지 삭제, 순서 변경 도구 (`ImageReplace`, `ListControls` 기반)
+### 새 단계 3. 이미지 업로드 기반 ✅ (2026-10-04, 커밋 전)
+- [x] prepare(서버가 경로 생성·검증) → `uploadPresigned` 직접 업로드(`/api/admin/upload`, 세션 확인, 경로 하나·형식·10MB·덮어쓰기 금지·5분) → finalize(존재·크기·형식·이미지 시그니처, 실패 시 삭제)
+- [x] 편집 도구: `useImageUpload`, `ImageReplace`, `ImageListEditor`(추가·↑↓·drag & drop·삭제 확인), `ConfirmDialog`
+- [x] 이미지 삭제를 버전 보관과 연동: 남은 모든 버전에서 참조하지 않을 때만 삭제 (롤백 안전), 문서별 kind 폴더 강제
+- [x] 고아 파일 정리 `npm run images:cleanup` (24시간 기준, 기본 미리보기)
+- [x] dev Blob 실검증: UI 23/23, HTTP 보안 15/15, 보관 연동 삭제·고아 정리 11/11 → 임시 테스트 페이지 삭제, 저장소 이미지 0개
+- 알게 된 점: 버전 번호는 절대 재사용하지 않는다 (전체 버전 삭제 후 v1부터 다시 만들면 CDN 캐시 때문에 예전 내용이 보임 → CLAUDE.md §25-8)
+- [ ] 커밋 & push
 
 ### 새 단계 4. Home Public UI + Home 편집
 - [ ] Main Visual(정적 레이아웃, 애니메이션은 단계 8), Introduction, Why A2F, Research Fields(6개 고정, 아이콘 코드 고정), Award & Activity 목록(필터·페이지네이션, 크기별 페이지당 카드 수), 하단 연락처

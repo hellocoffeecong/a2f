@@ -24,6 +24,10 @@ export type StoreConfig = {
   // Private stores live next to the public one, so their id must be passed explicitly.
   storeId?: () => string;
   historyLimit: number;
+  // Called after old versions were deleted, with the removed versions' documents and every
+  // document that is still kept (including the one just saved). Used to delete images that
+  // no kept version references any more.
+  onVersionsPruned?: (key: string, removed: unknown[], kept: unknown[]) => Promise<void>;
 };
 
 type Meta = { version: number; updatedAt: string };
@@ -79,6 +83,12 @@ export function createVersionedStore<S extends Record<string, z.ZodType<Meta>>>(
     return { document, pathname: entry.pathname };
   }
 
+  // Every kept version's document, newest first.
+  async function readAll<K extends Key>(key: K): Promise<StoredDocument<Doc<K>>[]> {
+    const versions = await listVersions(key);
+    return Promise.all(versions.map((entry) => fetchVersion(key, entry)));
+  }
+
   async function read<K extends Key>(key: K): Promise<StoredDocument<Doc<K>> | null> {
     const [latest] = await listVersions(key);
     return latest ? fetchVersion(key, latest) : null;
@@ -124,7 +134,7 @@ export function createVersionedStore<S extends Record<string, z.ZodType<Meta>>>(
 
     // The list read before saving plus the new version is the full set (a concurrent save of
     // the same version would have failed above), so no second list call is needed.
-    await prune(key, versions);
+    await prune(key, versions, document);
     return { ok: true, document };
   }
 
@@ -138,10 +148,17 @@ export function createVersionedStore<S extends Record<string, z.ZodType<Meta>>>(
   }
 
   // Deletes versions beyond historyLimit, counting the version just created.
-  // Best effort: a failed delete only leaves an extra old version behind.
-  async function prune(key: Key, previousVersions: DocumentVersion[]): Promise<void> {
+  // Best effort: a failed delete only leaves an extra old version behind (and then nothing
+  // referenced by it is cleaned up either).
+  async function prune(key: Key, previousVersions: DocumentVersion[], saved: Doc<Key>): Promise<void> {
     const stale = previousVersions.slice(config.historyLimit - 1);
     if (stale.length === 0) return;
+    const keptEntries = previousVersions.slice(0, config.historyLimit - 1);
+
+    // Read before deleting: the hook needs what the removed versions referenced.
+    const removedDocs = config.onVersionsPruned
+      ? await Promise.all(stale.map((entry) => fetchVersion(key, entry).then((stored) => stored.document)))
+      : [];
     try {
       await del(
         stale.map((entry) => entry.url),
@@ -149,6 +166,15 @@ export function createVersionedStore<S extends Record<string, z.ZodType<Meta>>>(
       );
     } catch (error) {
       console.error(`[blob] failed to prune old versions of ${key}`, error);
+      return;
+    }
+    if (!config.onVersionsPruned) return;
+
+    try {
+      const keptDocs = await Promise.all(keptEntries.map((entry) => fetchVersion(key, entry).then((stored) => stored.document)));
+      await config.onVersionsPruned(key, removedDocs, [saved, ...keptDocs]);
+    } catch (error) {
+      console.error(`[blob] post-prune cleanup failed for ${key}; left for images:cleanup`, error);
     }
   }
 
@@ -162,5 +188,5 @@ export function createVersionedStore<S extends Record<string, z.ZodType<Meta>>>(
     }
   }
 
-  return { listVersions, read, readVersion, save, restore };
+  return { listVersions, read, readAll, readVersion, save, restore };
 }

@@ -285,4 +285,7 @@ Public store·Public 서비스·`DataKey`에는 포함되지 않으며 서버 �
 - 허용: `image/jpeg`, `image/png`, `image/webp`, `image/avif` (확장자와 MIME 일치 필요)
 - 크기: 파일당 **10MB** 이하 (관리자·서버 동일)
 - 저장 이름: `images/<kind>/<entityId>/<uuid>.<ext>` — 원본 파일명은 쓰지 않음
-- 삭제: JSON 저장이 성공한 뒤에만 Blob 파일 삭제
+- 업로드 흐름: prepare(서버가 경로 생성) → 브라우저 직접 업로드 → finalize(파일 존재·크기·형식·이미지 시그니처 검증, 실패 시 삭제)
+- 문서는 자기 kind 폴더의 이미지만 참조 가능 (`home` → `images/home/` 등, settings는 이미지 없음)
+- 삭제: 콘텐츠에서 빠져도 즉시 지우지 않음. 오래된 버전이 정리될 때, **남아 있는 모든 버전에서 참조하지 않는 이미지만** 삭제 (롤백 안전)
+- 고아 파일(저장되지 않은 업로드): `npm run images:cleanup` (24시간 지난 것만, 기본은 미리보기)

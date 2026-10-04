@@ -44,6 +44,7 @@ npm run dev
 | `npm run lint` / `typecheck` | ESLint / TypeScript 검사 |
 | `npm run admin:bootstrap` | 최초 관리자 계정 생성 (`-- --reset`: 비밀번호 재설정) |
 | `npm run blob:test` | Blob 연결 테스트 (임시 파일만 사용 후 삭제) |
+| `npm run images:cleanup` | 아무 콘텐츠도 참조하지 않는 24시간 지난 이미지 목록 (`-- --delete`로 삭제) |
 | `npm run blob:export` / `blob:import` | Blob store 이전 ([docs/MIGRATION.md](docs/MIGRATION.md)) |
 
 ## 구조

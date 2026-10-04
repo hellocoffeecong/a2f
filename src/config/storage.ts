@@ -44,5 +44,21 @@ export const IMAGE_UPLOAD = {
 
 export type AllowedImageType = keyof typeof IMAGE_UPLOAD.allowedTypes;
 
+// Which image folder belongs to which content document. A document may only reference images
+// under its own kind, so an image never has to be checked against another document's history
+// before deletion. Settings has no images.
+export const DATA_IMAGE_KIND: Partial<Record<DataKey, ImageKind>> = {
+  home: "home",
+  awards: "awards",
+  projects: "projects",
+  professor: "professor",
+  members: "members",
+};
+
+// Uploaded images that no kept content version references (e.g. the content save never
+// happened or lost a version conflict) are deleted by `npm run images:cleanup` only after
+// this age, so an upload that is still being edited is never removed.
+export const ORPHAN_IMAGE_MIN_AGE_HOURS = 24;
+
 // Public pages read data through the Next data cache under these tags.
 export const cacheTagFor = (key: DataKey) => `data:${key}`;

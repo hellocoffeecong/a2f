@@ -915,6 +915,12 @@ Rules (implemented in `json-store.ts` — do not bypass it):
 5. **Rollback** = `restoreDocumentVersion()`: save an older kept version's content as a new version (history is never rewritten).
 6. **Reads**: public pages use `getPublishedDocument()` (Next data cache, tag `data:<key>`); admin code reads `json-store` directly (always latest). After a save call `refreshContent(key)` in a Server Action or `expireContent(key)` in a Route Handler.
 7. Missing documents are created from `src/config/defaults.ts` via `ensureDocument()`.
+8. **Version / pathname rules (confirmed):**
+   - Never reuse a version number.
+   - Never reset a document by deleting all versions and starting again at v1.
+   - To reset, save the initial state as a new version above the current maximum (then prune older ones).
+   - Never reuse a pathname that has been exposed through the CDN (data versions and images alike).
+   Reason: version URLs that were ever read stay cached by the CDN, so a reused path serves stale content.
 
 ---
 
@@ -933,19 +939,18 @@ Live data belongs in Vercel Blob.
 
 ## 27. Image Upload
 
-Allowed image types should initially include:
-- image/jpeg
-- image/png
-- image/webp
-- image/avif
+Flow (no upload-completed webhook):
+1. `prepareImageUpload` (Server Action, `requireAdmin`): validates MIME / extension / size (jpeg, png, webp, avif; ≤ 10 MB) and **generates the path on the server**: `images/{kind}/{entityId}/{uuid}.{ext}`. The original file name is never used in storage.
+2. Browser uploads directly with `uploadPresigned` → `src/app/api/admin/upload/route.ts` (own session check, 401 otherwise) issues a presigned PUT for **exactly that server-format path**, that content type, ≤ 10 MB, no overwrite, 5-minute validity.
+3. `finalizeImageUpload` (Server Action): checks the stored file (exists, real size, content type, **image signature** from the first bytes). File-level failures delete the file and reject. Width/height come from the browser as metadata only (range 1–20000), never used for security; a metadata error rejects without deleting.
+Client: `components/admin/edit/useImageUpload`, `ImageReplace`, `ImageListEditor` (add, ↑/↓, native drag & drop, delete with `ConfirmDialog`).
 
-Validate on the server:
-- MIME type
-- extension
-- file size
-- file name
-
-Use generated unique names.
+Lifecycle:
+- An upload is temporary until a content save references it.
+- A document may only reference images under its own kind (`DATA_IMAGE_KIND`); `saveDocument` refuses others.
+- Removing an image from content never deletes the file immediately. When old content versions are pruned, an image is deleted only if a removed version referenced it **and no kept version of that document references it** (rollback-safe).
+- Orphans (never referenced, e.g. cancelled edits or a lost version conflict): `npm run images:cleanup` (dry run) / `-- --delete`, only files older than `ORPHAN_IMAGE_MIN_AGE_HOURS` (24 h).
+- `BLOB_WEBHOOK_PUBLIC_KEY` is not used for callbacks; it only has to exist because `handleUploadPresigned` checks for it (it is created automatically when the Blob store is connected).
 
 ---
 
@@ -1223,4 +1228,6 @@ Do not automatically proceed to the next major phase when approval is expected.
 
 - Step 2 (common Header / Footer): done — `components/public/layout/` (SiteHeader, HeaderNav, MobileMenu, FooterView, SiteFooter), sticky header (below the AdminBar in admin via `--sticky-offset`), hamburger panel (0.25 s slide/fade, off with reduced motion), footer in-context editing (`components/admin/edit/Editable`, `InlineTextEditor`, `editors/FooterTextEditor`, `admin/(protected)/settings-actions.ts`). Verified against Figma at 365/768/1440/1920 and with an admin editing E2E test.
 
-Next: step 3 (image upload foundation). Do not start Public UI or animation work without explicit approval of that step.
+- Step 3 (image upload foundation): done — §27. Verified on the dev store (UI 23, HTTP security 15, retention/orphan 11 checks); the temporary test page was removed.
+
+Next: step 4 (Home public UI + Home editing). Do not start Public UI or animation work without explicit approval of that step.
