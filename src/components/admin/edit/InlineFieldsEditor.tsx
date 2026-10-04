@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import Button from "@/components/common/Button";
-import { Field, TextArea, TextInput } from "@/components/common/form/Field";
+import { Field, Select, TextArea, TextInput } from "@/components/common/form/Field";
 import { useEditable } from "./Editable";
 import type { SaveOutcome } from "./InlineTextEditor";
 import styles from "./InlineTextEditor.module.css";
@@ -13,7 +13,8 @@ export type FieldSpec<N extends string> = {
   label: string;
   hint?: string;
   multiline?: boolean;
-  type?: "text" | "email" | "tel";
+  type?: "text" | "email" | "tel" | "date" | "select";
+  options?: { value: string; label: string }[]; // type "select"
 };
 
 type Props<N extends string> = {
@@ -64,7 +65,19 @@ export default function InlineFieldsEditor<N extends string>({ fields, initialVa
         };
         return (
           <Field key={field.name} label={field.label} hint={field.hint}>
-            {field.multiline ? <TextArea {...control} /> : <TextInput type={field.type ?? "text"} {...control} />}
+            {field.multiline ? (
+              <TextArea {...control} />
+            ) : field.type === "select" ? (
+              <Select {...control}>
+                {field.options?.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            ) : (
+              <TextInput type={field.type ?? "text"} {...control} />
+            )}
           </Field>
         );
       })}

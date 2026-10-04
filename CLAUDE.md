@@ -316,10 +316,15 @@ These were confirmed by the project owner after Figma MCP verification. They tak
 - Keep the original image ratio as far as possible.
 
 ### Award detail
-- Desktop: two columns. Left = title/meta, body, People. Right = images.
-- Left column stretches to the right column's height: `display: flex; flex-direction: column; justify-content: space-between`, with a minimum vertical gap of ~300px between body and People when space allows. The bottom of People aligns with the bottom of the final image.
-- 300 is NOT the horizontal column gap (actual horizontal gap: 1440 → 133, 1920 → 176).
-- 365 / 768: single column.
+- Desktop (1440/1920): title/meta on top, then two columns. Left = body + People, right = images.
+- Left column stretches to the right column's height; People is pushed to the bottom so it ends with the last image. Minimum body ↔ People gap from Figma per breakpoint: 1920 → 300 (Figma ~351), 1440 → 160, 768/365 → 60. When the body is the longer side, the minimum gap wins and the bottoms are not forced to align.
+- Horizontal column gap: 1440 → 133, 1920 → 176 (columns 519 | 628 and 553 | 991).
+- 365 / 768: single column, title/meta → images → body → People.
+- Images keep their original ratio (width 100%, height auto, no crop) — Figma's fixed/stretched heights are mockup convenience. Gaps between images follow Figma.
+- People (max 4): no profile photo → Figma gray gradient placeholder; degree "N/A" is not shown; the separator square only between degree and role; text bottom-aligned from 768, vertically centred at 365.
+- Body is plain text; a blank line separates paragraphs (a blank-line gap at 1440/1920, none at 365/768).
+- Award and Activity share the layout; only the type icon differs. No active GNB item (the 1920 PROJECT-active is a design error).
+- Unknown id → `notFound()` (real 404, minimal "페이지를 찾을 수 없습니다" + Home link inside the site chrome). In the admin: "해당 항목을 찾을 수 없습니다" with the AdminBar kept. `/award` → `/#award` (next.config redirect).
 
 ### Data
 - Award: `title` = event/project name; `label` = e.g. "Excellence Prize", "Academic Conference"; `images: []` (multiple).
@@ -1249,4 +1254,5 @@ Do not automatically proceed to the next major phase when approval is expected.
 
 - Step 4b (animations): approved — ani1 in `components/public/award/AwardCard.module.css` (1440+), ani3 in `components/public/home/HomeCollage.module.css` (`animation-timeline: scroll(root)`, 768+, guarded by `prefers-reduced-motion: no-preference` and `@supports`). Confirmed scope: public 1920/1440 full ani3, 768 simplified, 365 / reduced motion / unsupported browsers static; the admin Home is always static (its page wrapper sets `--scroll-motion-timeline: none`; no admin flag in public components). ani1 runs in the admin too.
 
-Next: step 5 (Award Detail) — analysis and design report first, no implementation before approval.
+- Step 5 (Award Detail): approved — public `/award/[id]` (`components/public/award/AwardDetail`), admin `/admin/award/[id]` (summary / body / images in place, People in an EditPanel via `Editable panelTitle`, delete with confirmation; partial save actions in `award-actions.ts`), `not-found.tsx` (root and `(public)`), redirects in `next.config.mjs`. `AWARD_DETAIL_AVAILABLE` is now `true` (Home cards link to the detail page).
+- Note: data written outside the admin (scripts) does not invalidate the Next data cache; a local `next build` can reuse `.next/cache` from an earlier build (clear it when testing with script-written data).

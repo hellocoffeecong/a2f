@@ -5,8 +5,9 @@ import { saveAward } from "@/app/admin/(protected)/award-actions";
 import ImageListEditor from "@/components/admin/edit/ImageListEditor";
 import Button from "@/components/common/Button";
 import { Field, Select, TextArea, TextInput } from "@/components/common/form/Field";
-import { AWARD_ACTIVITY_TYPES, AWARD_DEGREES, LIMITS } from "@/config/content";
-import type { Award, AwardPerson } from "@/types/content";
+import { AWARD_ACTIVITY_TYPES } from "@/config/content";
+import type { Award } from "@/types/content";
+import AwardPeopleFields from "./AwardPeopleFields";
 import styles from "./AwardForm.module.css";
 
 export type AwardDraft = Omit<Award, "createdAt" | "updatedAt">;
@@ -21,7 +22,6 @@ type Props = {
 };
 
 const TYPE_LABEL = { AWARD: "Award", ACTIVITY: "Activity" } as const;
-const emptyPerson = (): AwardPerson => ({ name: "", degree: "N/A", role: "" });
 
 // Award & Activity form inside the EditPanel. Saved as a whole; images and people are part
 // of the same save (images[0] is the card image).
@@ -31,8 +31,6 @@ export default function AwardForm({ mode, award, version, onSaved, onCancel, onP
   const [pending, startTransition] = useTransition();
 
   const set = <K extends keyof AwardDraft>(key: K, value: AwardDraft[K]) => setDraft((current) => ({ ...current, [key]: value }));
-  const setPerson = (index: number, person: AwardPerson) =>
-    set("people", draft.people.map((current, i) => (i === index ? person : current)));
 
   const submit = () =>
     startTransition(async () => {
@@ -85,55 +83,7 @@ export default function AwardForm({ mode, award, version, onSaved, onCancel, onP
         label="이미지 (첫 번째 = 카드 이미지)"
       />
 
-      <fieldset className={styles.people}>
-        <legend className={styles.legend}>
-          참여자 ({draft.people.length}/{LIMITS.awardPeople})
-        </legend>
-        {draft.people.map((person, index) => (
-          <div key={index} className={styles.person}>
-            <div className={styles.personFields}>
-              <Field label="이름">
-                <TextInput value={person.name} onChange={(event) => setPerson(index, { ...person, name: event.target.value })} required />
-              </Field>
-              <Field label="학위">
-                <Select
-                  value={person.degree}
-                  onChange={(event) => setPerson(index, { ...person, degree: event.target.value as AwardPerson["degree"] })}
-                >
-                  {AWARD_DEGREES.map((degree) => (
-                    <option key={degree} value={degree}>
-                      {degree}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="역할">
-                <TextInput value={person.role} onChange={(event) => setPerson(index, { ...person, role: event.target.value })} />
-              </Field>
-            </div>
-            <ImageListEditor
-              kind="awards"
-              entityId={draft.id}
-              images={person.profileImage ? [person.profileImage] : []}
-              onChange={(images) => setPerson(index, { ...person, profileImage: images[0] })}
-              max={1}
-              label="프로필 이미지 (선택)"
-            />
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => set("people", draft.people.filter((_, i) => i !== index))}
-            >
-              참여자 {index + 1} 빼기
-            </Button>
-          </div>
-        ))}
-        {draft.people.length < LIMITS.awardPeople && (
-          <Button variant="secondary" size="sm" onClick={() => set("people", [...draft.people, emptyPerson()])}>
-            참여자 추가
-          </Button>
-        )}
-      </fieldset>
+      <AwardPeopleFields awardId={draft.id} people={draft.people} onChange={(people) => set("people", people)} />
 
       {error && (
         <p className={styles.error} role="alert">

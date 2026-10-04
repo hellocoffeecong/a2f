@@ -167,10 +167,12 @@
 - [x] ani3 Home scroll (CSS scroll-driven, JS 없음): 1920 시작 -185px + 아래 블록 일부만 보임 → 750px 스크롤 동안 최종 배치로, 1440 -110px/500px, 768 -60px/350px(이동만), 365·reduced motion·미지원 브라우저 = 정적 최종 배치
 - [ ] 커밋 & push
 
-### 새 단계 5. Award Detail Public UI + 편집
-- [ ] 상세 페이지 검증 후 `AWARD_DETAIL_AVAILABLE = true` (Home 카드 링크 활성)
-- [ ] `/award/[id]` (2열 space-between + 최소 300 세로 간격, People 최대 4명), `/award` → `/#award`
-- [ ] Admin `/admin/award/[id]`: 본문 인라인, 이미지 변경·순서, People `EditPanel`
+### 새 단계 5. Award Detail Public UI + 편집 — 승인 (2026-10-04)
+- [x] Public `/award/[id]` (Figma 4개 크기, 원본 비율 이미지, People 최대 4명, 최소 간격 1920 300 / 1440 160 / 768·365 60), 404, `/award` → `/#award`
+- [x] Admin `/admin/award/[id]`: 제목·구분·라벨·날짜 / 본문 / 이미지(추가·삭제·순서) 제자리 편집, People `EditPanel`, 삭제 확인 → `/admin#award`
+- [x] 상세 페이지 검증 후 `AWARD_DETAIL_AVAILABLE = true` (Home 카드 링크 활성)
+- [x] 검증용 [5-test] 항목 → 새 빈 버전으로 정리 (awards v23)
+- [x] 커밋 & push, production 확인
 
 ### 새 단계 6. Project List / Detail Public UI + 편집
 - [ ] 목록: 행 정렬(Masonry 아님), 이미지 cover crop, 카테고리·연도 필터, 9개씩 추가 로딩, Scroll to top
