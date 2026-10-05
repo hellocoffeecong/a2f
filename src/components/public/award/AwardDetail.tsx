@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { formatDisplayDate } from "@/lib/utils/date";
-import type { Award, AwardPerson } from "@/types/content";
+import PeopleList from "@/components/public/people/PeopleList";
+import type { Award } from "@/types/content";
 import AwardTypeIcon from "./AwardTypeIcon";
 import styles from "./AwardDetail.module.css";
 
@@ -54,7 +55,7 @@ export default function AwardDetail({
           <div className={styles.text}>
             {showBody && <div className={styles.bodyCell}>{(renderBody ?? identity)(<AwardBody body={award.body} />)}</div>}
             {showPeople && (
-              <div className={styles.peopleCell}>{(renderPeople ?? identity)(<AwardPeople people={award.people} />)}</div>
+              <div className={styles.peopleCell}>{(renderPeople ?? identity)(<PeopleList people={award.people} />)}</div>
             )}
           </div>
           {showImages && (
@@ -103,46 +104,5 @@ function AwardImages({ images, title }: { images: Award["images"]; title: string
         />
       ))}
     </div>
-  );
-}
-
-const DEGREE_HIDDEN = "N/A";
-
-function AwardPeople({ people }: { people: AwardPerson[] }) {
-  if (people.length === 0) return null;
-  return (
-    <ul className={styles.people} aria-label="People">
-      {people.map((person, index) => {
-        const details = [person.degree === DEGREE_HIDDEN ? "" : person.degree, person.role].filter(Boolean);
-        return (
-          <li key={index} className={styles.person}>
-            <div className={styles.photo}>
-              {person.profileImage && (
-                <Image
-                  className={styles.photoImage}
-                  src={person.profileImage.url}
-                  alt=""
-                  fill
-                  sizes="100px"
-                />
-              )}
-            </div>
-            <div className={styles.personText}>
-              <p className={styles.name}>{person.name}</p>
-              {details.length > 0 && (
-                <p className={styles.personMeta}>
-                  {details.map((detail, i) => (
-                    <span key={detail} className={styles.personDetail}>
-                      {i > 0 && <span className={styles.personSquare} aria-hidden="true" />}
-                      {detail}
-                    </span>
-                  ))}
-                </p>
-              )}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
   );
 }

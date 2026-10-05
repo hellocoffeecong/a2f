@@ -154,3 +154,52 @@
     line-height: 36px;
   }
 }
+
+/* Project year filter: 768 16/22, 1440 20/30, 1920 24/36 (no vertical padding), gap 10 / 20. */
+.project .button {
+  gap: 10px;
+  padding: 0 4px;
+
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.project .option {
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.project .list {
+  top: calc(100% + 10px);
+}
+
+@media (min-width: 1440px) {
+  .project .button,
+  .project .option {
+    font-size: 20px;
+    line-height: 30px;
+  }
+
+  .project .chevron {
+    width: 16px;
+    height: 10px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .project .button {
+    gap: 20px;
+    padding: 0 4px;
+  }
+
+  .project .button,
+  .project .option {
+    font-size: 24px;
+    line-height: 36px;
+  }
+
+  .project .chevron {
+    width: 18px;
+    height: 11px;
+  }
+}

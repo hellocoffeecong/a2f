@@ -10,12 +10,11 @@ import {
   saveAwardSummary,
 } from "@/app/admin/(protected)/award-actions";
 import ConfirmDialog from "@/components/admin/edit/ConfirmDialog";
-import { useEditable } from "@/components/admin/edit/Editable";
 import ImageListEditor from "@/components/admin/edit/ImageListEditor";
 import InlineFieldsEditor from "@/components/admin/edit/InlineFieldsEditor";
 import InlineTextEditor from "@/components/admin/edit/InlineTextEditor";
 import ListControls from "@/components/admin/edit/ListControls";
-import Button from "@/components/common/Button";
+import SaveActions, { useSaveAndClose } from "@/components/admin/edit/SaveActions";
 import { AWARD_ACTIVITY_TYPES } from "@/config/content";
 import type { Award, AwardPerson, ImageRef } from "@/types/content";
 import AwardPeopleFields from "./AwardPeopleFields";
@@ -57,65 +56,25 @@ export function AwardBodyEditor({ award, version }: Base) {
   );
 }
 
-// Shared shell for the image and People editors: 저장 / 취소 with the outcome shown in place.
-function useSave(save: () => Promise<{ ok: true } | { ok: false; message: string }>) {
-  const { close } = useEditable();
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
-  const submit = () =>
-    startTransition(async () => {
-      setError(null);
-      const outcome = await save();
-      if (!outcome.ok) {
-        setError(outcome.message);
-        return;
-      }
-      close();
-      router.refresh();
-    });
-  return { close, error, pending, submit };
-}
-
-function EditorActions({ pending, error, onSave, onCancel }: { pending: boolean; error: string | null; onSave: () => void; onCancel: () => void }) {
-  return (
-    <>
-      {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      )}
-      <div className={styles.actions}>
-        <Button size="sm" onClick={onSave} disabled={pending}>
-          {pending ? "저장 중…" : "저장"}
-        </Button>
-        <Button variant="secondary" size="sm" onClick={onCancel} disabled={pending}>
-          취소
-        </Button>
-      </div>
-    </>
-  );
-}
-
 // Add (upload), remove (with confirmation) and reorder; the first image is the Home card image.
 export function AwardImagesEditor({ award, version }: Base) {
   const [images, setImages] = useState<ImageRef[]>(award.images);
-  const { close, error, pending, submit } = useSave(() => saveAwardImages(version, award.id, images));
+  const { close, error, pending, submit } = useSaveAndClose(() => saveAwardImages(version, award.id, images));
   return (
     <div className={styles.editor}>
       <ImageListEditor kind="awards" entityId={award.id} images={images} onChange={setImages} label="이미지 (첫 번째 = Home 카드 이미지)" />
-      <EditorActions pending={pending} error={error} onSave={submit} onCancel={close} />
+      <SaveActions pending={pending} error={error} onSave={submit} onCancel={close} />
     </div>
   );
 }
 
 export function AwardPeopleEditor({ award, version }: Base) {
   const [people, setPeople] = useState<AwardPerson[]>(award.people);
-  const { close, error, pending, submit } = useSave(() => saveAwardPeople(version, award.id, people));
+  const { close, error, pending, submit } = useSaveAndClose(() => saveAwardPeople(version, award.id, people));
   return (
     <div className={styles.panelForm}>
       <AwardPeopleFields awardId={award.id} people={people} onChange={setPeople} />
-      <EditorActions pending={pending} error={error} onSave={submit} onCancel={close} />
+      <SaveActions pending={pending} error={error} onSave={submit} onCancel={close} />
     </div>
   );
 }

@@ -93,6 +93,7 @@ export const awardSchema = z.object({
 export const projectMemberSchema = z.object({
   name: requiredText,
   degree: z.enum(AWARD_DEGREES),
+  role: optionalText.default(""), // added in step 6; older versions read as ""
   profileImage: imageRefSchema.optional(),
 });
 

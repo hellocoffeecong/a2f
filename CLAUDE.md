@@ -312,8 +312,13 @@ These were confirmed by the project owner after Figma MCP verification. They tak
 - Card body text is `#555` at every breakpoint (1920's `#888` in Figma is treated as an inconsistency). Metadata may use `#888`.
 - Year filter: dropdown at the right end of the category row at 768 / 1440 / 1920; the open state lists years vertically. Not shown at 365.
 
+- Step 6 decisions (owner-approved): card image box = Figma height pattern per position (365: 3 cards, 768: 6, 1440/1920: 9), cover crop of `images[0]` — list cards only. Reading order image → title → tag/date → body; 1920 shows tag/date above the title by CSS `order` only. Category filter All + 5 at all sizes; year filter "All" (default) + years that exist in the data, 768 and up (365: all years). Filters in the URL (`?category=&year=`, pushed: back/forward work); a filter change starts again at 9 cards; +9 when the end of the list is reached (IntersectionObserver). Scroll to top only from 1920 (reusable `ScrollToTop`), smooth unless reduced motion.
+- ani2 (project image hover): Figma timing — the next photo every ~235 ms with a crossfade, back to `images[0]` on leave; only with a mouse on hover-capable 1440+ layouts without reduced motion; only previous/current/next layers are mounted.
+
 ### Project detail
-- Keep the original image ratio as far as possible.
+- Keep the original image ratio (no crop) for every image.
+- 1440/1920: title/date, then body → tags (category + custom tag) → member (pushed down to end with the representative image) on the left, `images[0]` on the right; the other images below at full width. 365/768: title/date → body → tags → all images → member.
+- Member (max 1): same display rules as Award People; `role` is optional (added in step 6).
 
 ### Award detail
 - Desktop (1440/1920): title/meta on top, then two columns. Left = body + People, right = images.
@@ -1255,4 +1260,5 @@ Do not automatically proceed to the next major phase when approval is expected.
 - Step 4b (animations): approved — ani1 in `components/public/award/AwardCard.module.css` (1440+), ani3 in `components/public/home/HomeCollage.module.css` (`animation-timeline: scroll(root)`, 768+, guarded by `prefers-reduced-motion: no-preference` and `@supports`). Confirmed scope: public 1920/1440 full ani3, 768 simplified, 365 / reduced motion / unsupported browsers static; the admin Home is always static (its page wrapper sets `--scroll-motion-timeline: none`; no admin flag in public components). ani1 runs in the admin too.
 
 - Step 5 (Award Detail): approved — public `/award/[id]` (`components/public/award/AwardDetail`), admin `/admin/award/[id]` (summary / body / images in place, People in an EditPanel via `Editable panelTitle`, delete with confirmation; partial save actions in `award-actions.ts`), `not-found.tsx` (root and `(public)`), redirects in `next.config.mjs`. `AWARD_DETAIL_AVAILABLE` is now `true` (Home cards link to the detail page).
+- Step 6 (Project List / Detail): approved; Award/Home regression after the shared refactors verified — public `/project` (`components/public/project/ProjectList`, `ProjectCard` + `useHoverCycle`, `ProjectTag`, `ProjectPage`), `/project/[id]` (`ProjectDetail`), shared `components/public/people/PeopleList` (Award People + Project member), `components/public/ui/ScrollToTop`, `useUrlSearch`; admin `/admin/project` (`AdminProjectList`, `ProjectForm`) and `/admin/project/[id]` (`ProjectDetailEditors`), actions in `project-actions.ts`. Legacy `(public)/project/*` and `data/project.json` removed.
 - Note: data written outside the admin (scripts) does not invalidate the Next data cache; a local `next build` can reuse `.next/cache` from an earlier build (clear it when testing with script-written data).

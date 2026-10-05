@@ -1,11 +1,12 @@
 "use client";
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { AWARD_TYPE_META } from "@/components/public/award/AwardTypeIcon";
 import AwardCard from "@/components/public/award/AwardCard";
 import FilterDropdown, { type FilterOption } from "@/components/public/ui/FilterDropdown";
 import Pagination from "@/components/public/ui/Pagination";
 import { useMediaQuery } from "@/components/public/ui/useMediaQuery";
+import { updateUrlSearch as updateSearch, useUrlSearch } from "@/components/public/ui/useUrlSearch";
 import { AWARD_DETAIL_AVAILABLE } from "@/config/content";
 import type { NavBasePath } from "@/config/navigation";
 import type { Award } from "@/types/content";
@@ -37,11 +38,10 @@ type Props = {
 // Filter and page live in the URL (?award=activity&page=2), so returning from a detail page
 // keeps the place. They are read on the client; the server renders the first page of "All".
 export default function AwardSection({ awards, basePath = "", toolbar, renderItemActions, empty }: Props) {
-  const search = useLocationSearch();
+  const params = useUrlSearch();
   const isTablet = useMediaQuery(TABLET_QUERY);
   const hasFilter = useMediaQuery(FILTER_QUERY, true);
 
-  const params = new URLSearchParams(search);
   const requested = params.get("award");
   const filter: Filter = hasFilter && (requested === "award" || requested === "activity") ? requested : "all";
   const items = filter === "all" ? awards : awards.filter((award) => award.type === FILTER_TYPE[filter]);
@@ -96,31 +96,4 @@ export default function AwardSection({ awards, basePath = "", toolbar, renderIte
       )}
     </section>
   );
-}
-
-// --- URL state ---------------------------------------------------------------
-
-const SEARCH_CHANGE = "a2f:searchchange";
-
-function subscribeSearch(onChange: () => void) {
-  window.addEventListener("popstate", onChange);
-  window.addEventListener(SEARCH_CHANGE, onChange);
-  return () => {
-    window.removeEventListener("popstate", onChange);
-    window.removeEventListener(SEARCH_CHANGE, onChange);
-  };
-}
-
-function useLocationSearch(): string {
-  return useSyncExternalStore(subscribeSearch, () => window.location.search, () => "");
-}
-
-function updateSearch(changes: Record<string, string | null>) {
-  const url = new URL(window.location.href);
-  for (const [key, value] of Object.entries(changes)) {
-    if (value === null) url.searchParams.delete(key);
-    else url.searchParams.set(key, value);
-  }
-  window.history.replaceState(window.history.state, "", url);
-  window.dispatchEvent(new Event(SEARCH_CHANGE));
 }

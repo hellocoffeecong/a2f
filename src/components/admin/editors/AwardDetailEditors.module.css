@@ -14,12 +14,6 @@
   gap: var(--space-20);
 }
 
-.actions {
-  display: flex;
-
-  gap: var(--space-8);
-}
-
 .error {
   margin: 0;
 

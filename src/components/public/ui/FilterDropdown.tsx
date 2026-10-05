@@ -15,12 +15,14 @@ type Props<T extends string> = {
   options: FilterOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  size?: "award" | "project"; // Figma sizes of the Award filter (Home) or the Project year filter
   className?: string;
 };
 
-// Figma filter dropdown (Award & Activity open state: 1440 0:2325 / 1920 0:326 / 768 0:1721).
+// Figma filter dropdown (Award & Activity open state: 1440 0:2325 / 1920 0:326 / 768 0:1721;
+// Project year filter: closed 1920 0:570 / 1440 0:2398 / 768 0:1913, open 1920 0:669).
 // Button + listbox; keyboard: ↑/↓, Home/End, Enter/Space to choose, Esc to close.
-export default function FilterDropdown<T extends string>({ label, options, value, onChange, className }: Props<T>) {
+export default function FilterDropdown<T extends string>({ label, options, value, onChange, size = "award", className }: Props<T>) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -84,7 +86,10 @@ export default function FilterDropdown<T extends string>({ label, options, value
   };
 
   return (
-    <div ref={rootRef} className={`${styles.dropdown} ${open ? styles.open : ""} ${className ?? ""}`}>
+    <div
+      ref={rootRef}
+      className={`${styles.dropdown} ${size === "project" ? styles.project : ""} ${open ? styles.open : ""} ${className ?? ""}`}
+    >
       <button
         ref={buttonRef}
         type="button"

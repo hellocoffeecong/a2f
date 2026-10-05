@@ -160,7 +160,8 @@ Home의 Award & Activity 목록과 `/award/[id]` 상세에 사용. 별도 목록
 | `customTag` | string | 자유 입력 **1개** (배열 아님) |
 | `member` | object \| null | **최대 1명**, 직접 입력 (Team 데이터와 연결 안 함) |
 | `member.name` | string | 필수 |
-| `member.degree` | Award 학위 | Award와 같은 목록 |
+| `member.degree` | Award 학위 | Award와 같은 목록 (`N/A`는 화면에 표시 안 함) |
+| `member.role` | string | 선택 (예: Designer). Step 6에서 추가 — 이전 버전은 `""`로 읽힘 |
 | `member.profileImage` | ImageRef | 선택 |
 | `images` | ImageRef[] | `images[0]` = 대표 이미지. 순서 = 표시 순서 |
 | `createdAt`, `updatedAt` | 타임스탬프 | |
@@ -173,7 +174,7 @@ Home의 Award & Activity 목록과 `/award/[id]` 상세에 사용. 별도 목록
   "body": "프로젝트 설명",
   "category": "UX/UI",
   "customTag": "AI agent app",
-  "member": { "name": "Hong Gildong", "degree": "Master" },
+  "member": { "name": "Hong Gildong", "degree": "Master", "role": "Designer" },
   "images": [],
   "createdAt": "2026-10-04T05:00:00.000Z",
   "updatedAt": "2026-10-04T05:00:00.000Z"

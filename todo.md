@@ -174,11 +174,15 @@
 - [x] 검증용 [5-test] 항목 → 새 빈 버전으로 정리 (awards v23)
 - [x] 커밋 & push, production 확인
 
-### 새 단계 6. Project List / Detail Public UI + 편집
-- [ ] 목록: 행 정렬(Masonry 아님), 이미지 cover crop, 카테고리·연도 필터, 9개씩 추가 로딩, Scroll to top
-- [ ] 상세: 원본 비율 유지
-- [ ] Admin `/admin/project`, `/admin/project/[id]`: 카드 추가/삭제/정렬, 상세 `EditPanel`, 이미지 순서
-- [ ] 기존 `(public)/project/*`, `news`, `education`, `publication` 페이지 정리 (Publication은 Notion 링크)
+### 새 단계 6. Project List / Detail Public UI + 편집 — 승인 (2026-10-05)
+- [x] 목록: 행 정렬 Grid(Masonry 아님), 위치별 Figma 이미지 높이 패턴 + cover crop, 카테고리·연도(All 기본) 필터, URL 동기화(뒤로/앞으로), 9개 + 9개씩 추가, Scroll to top(1920+)
+- [x] ani2 hover: 약 235ms 간격 crossfade, 마우스·1440+·hover 가능·reduced motion 아님에서만
+- [x] 상세: 원본 비율, 멤버 최대 1명(role 추가), 커스텀 태그 1개, 404
+- [x] Admin `/admin/project`(추가·수정·삭제), `/admin/project/[id]`(요약·본문·이미지 순서/삭제·멤버 패널·삭제)
+- [x] 기존 `(public)/project/*`, `data/project.json` 삭제 / 검증용 [6-test] 데이터 → 새 빈 버전(projects v128)
+- [x] 공통 refactor 후 Award / Home Award 회귀 테스트 (임시 [7r-test] 데이터 → 새 빈 버전 awards v30)
+- [ ] `news`, `education`, `publication` legacy 페이지 정리 (Publication은 Notion 링크) — 이후 단계
+- [x] 커밋 & push
 
 ### 새 단계 7. Team Public UI + 편집
 - [ ] 교수(영역별 string[], 사진 최대 3장 3초 회전), Student / Alumni (순서 변경)

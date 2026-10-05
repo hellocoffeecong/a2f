@@ -3,7 +3,7 @@ import type { SaveOutcome } from "@/components/admin/edit/InlineTextEditor";
 import { DEFAULT_CONTENT } from "@/config/defaults";
 import { readDocument, saveDocument, VERSION_CONFLICT_MESSAGE } from "@/lib/blob/json-store";
 import { refreshContent } from "@/services/content";
-import type { Award, HomeContent, Settings } from "@/types/content";
+import type { Award, HomeContent, Project, Settings } from "@/types/content";
 
 // Read-modify-save for admin Server Actions (call requireAdmin() and validate input first).
 // The save only succeeds if the stored version is still the one the editor was opened with;
@@ -47,5 +47,16 @@ export async function updateAwards(expectedVersion: number, update: Update<Award
   const result = await saveDocument("awards", expectedVersion, { items: next });
   if (!result.ok) return { ok: false, message: result.message };
   refreshContent("awards");
+  return { ok: true };
+}
+
+export async function updateProjects(expectedVersion: number, update: Update<Project[]>): Promise<SaveOutcome> {
+  const current = await readDocument("projects");
+  if ((current?.document.version ?? 0) !== expectedVersion) return CONFLICT;
+  const next = update(current?.document.items ?? []);
+  if (isError(next)) return { ok: false, message: next.error };
+  const result = await saveDocument("projects", expectedVersion, { items: next });
+  if (!result.ok) return { ok: false, message: result.message };
+  refreshContent("projects");
   return { ok: true };
 }
