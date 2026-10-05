@@ -185,23 +185,28 @@ Home의 Award & Activity 목록과 `/award/[id]` 상세에 사용. 별도 목록
 
 ## 5. professor (단일 객체)
 
+Team 페이지 전용 정보(상단 소개)도 여기에 둔다. 연락처는 `settings.contact`와 공유하지 않는다.
+
 | 필드 | 타입 | 규칙 |
 |---|---|---|
+| `teamIntro.text` | string | Team 상단 소개 문구. 줄바꿈 그대로 표시. Step 7 이전 버전은 Figma 문구로 읽힘 |
+| `teamIntro.image` | ImageRef? | 소개 사진 1장 (없으면 공개 화면에서 생략) |
 | `name` | string | 영문 이름, 필수 (화면에서 앞에 "Prof." 고정 표시) |
 | `nameKo` | string | 한글 이름 |
 | `title` | string | 직함 (예: "교수") |
-| `department` | string | 소속 |
+| `department` | string | 소속. 부제는 `nameKo + " " + title + ", " + department`로 조합 (문장 전체를 저장하지 않음) |
 | `addressLines` | string[] | 주소 줄 단위 |
 | `phone` | string | |
 | `email` | string | 이메일 형식 또는 빈 값 |
-| `education`, `experience`, `research`, `projects` | string[] | 영역별 한 줄씩. 관리자에서 추가/삭제/순서 변경 |
-| `images` | ImageRef[] | **최대 3장**, 약 3초마다 순환 표시 |
+| `education`, `experience`, `research`, `projects` | string[] | 영역별 한 줄씩. 관리자에서 추가/수정/삭제/순서 변경 (서식 없음). 빈 영역은 공개 화면에서 생략 |
+| `images` | ImageRef[] | **최대 3장**, 약 3초마다 순환 표시 (reduced motion이면 정지, 표시기 클릭으로 선택) |
 
 ```json
 {
   "version": 1,
   "updatedAt": "2026-10-04T05:00:00.000Z",
   "data": {
+    "teamIntro": { "text": "We are researchers with an approach\nto flux and access to a frame." },
     "name": "Sample Name",
     "nameKo": "홍길동",
     "title": "교수",
@@ -228,10 +233,10 @@ Home의 Award & Activity 목록과 `/award/[id]` 상세에 사용. 별도 목록
 | `type` | `"STUDENT"` \| `"ALUMNI"` | |
 | `degree` | Team 학위 | `N/A`, `AA.`, `BA.`, `MA.`, `Dr.`, `Hon. D.`, `Prof.` (Award 학위와 다른 목록) |
 | `name` | string | 필수 |
-| `email` | string | 이메일 형식 또는 빈 값 |
+| `email` | string | 이메일 형식 또는 빈 값 (값이 있을 때만 mailto 링크로 표시) |
 | `field` | string | 연구 분야 한 줄 |
 | `profileImage` | ImageRef \| null | |
-| `order` | number | 같은 type 안에서 표시 순서 |
+| `order` | number | 같은 type 안에서 표시 순서. 추가/삭제/이동 때마다 type별 0, 1, 2 …로 다시 매김 |
 | `createdAt`, `updatedAt` | 타임스탬프 | |
 
 ```json

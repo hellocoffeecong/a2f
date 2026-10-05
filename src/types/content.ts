@@ -17,6 +17,7 @@ import type {
   projectSchema,
   researchFieldSchema,
   settingsSchema,
+  teamIntroSchema,
 } from "@/lib/validation/content";
 
 export type { ContentDocuments } from "@/lib/validation/content";
@@ -36,5 +37,6 @@ export type Award = z.infer<typeof awardSchema>;
 export type ProjectMember = z.infer<typeof projectMemberSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type Professor = z.infer<typeof professorSchema>;
+export type TeamIntro = z.infer<typeof teamIntroSchema>;
 export type Member = z.infer<typeof memberSchema>;
 export type Settings = z.infer<typeof settingsSchema>;

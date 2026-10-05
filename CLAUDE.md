@@ -331,6 +331,15 @@ These were confirmed by the project owner after Figma MCP verification. They tak
 - Award and Activity share the layout; only the type icon differs. No active GNB item (the 1920 PROJECT-active is a design error).
 - Unknown id → `notFound()` (real 404, minimal "페이지를 찾을 수 없습니다" + Home link inside the site chrome). In the admin: "해당 항목을 찾을 수 없습니다" with the AdminBar kept. `/award` → `/#award` (next.config redirect).
 
+### Team (step 7, owner-approved)
+- `professor.json` holds the Team-page-only intro: `teamIntro { text, image? }` (text keeps its line breaks; 365 sets it in Pretendard per Figma). The 365 empty box beside the intro photo is layout only.
+- Subtitle = `nameKo + " " + title + ", " + department`, composed in the UI (never stored as one sentence). Professor contact uses the professor's own fields, not `settings.contact`.
+- Layout: 365 contact beside the photo, sections below; 768 photo left (223) | four sections right; 1440/1920 Education–Research | photo | Project (3 equal columns). 1440 contact: address 248 wide, phone/email from the 2nd column.
+- Photos (max 3): ~3 s rotation with crossfade; the squares select directly (selected = filled, others = outline) and switch at once; pause on hover / keyboard focus; reduced motion = no rotation; 1 photo = no squares; 0 = no photo area (public). Admin: no rotation (`autoRotate={false}`).
+- Sections stay `string[]` (StringListEditor: add / edit / delete / ↑↓, no rich text). An empty section is hidden on the public page.
+- Student / Alumni share `MemberSection` / `TeamMember`; order = members.json `order`, renumbered 0, 1, 2 … per type after every add / delete / move / type change. Email = `mailto:` in `#888`, underline only on hover, focus ring on keyboard focus, nothing rendered when empty. No photo → the People gray gradient. Degree N/A → name only. Korean list text uses `word-break: keep-all`.
+- Empty Student / Alumni: public hides the section; the admin shows "등록된 구성원이 없습니다" + [추가].
+
 ### Data
 - Award: `title` = event/project name; `label` = e.g. "Excellence Prize", "Academic Conference"; `images: []` (multiple).
 - Project member: entered directly (not linked to Team), max 1, `{ name, degree, profileImage? }`, degree uses the Award degree list.
@@ -1261,4 +1270,5 @@ Do not automatically proceed to the next major phase when approval is expected.
 
 - Step 5 (Award Detail): approved — public `/award/[id]` (`components/public/award/AwardDetail`), admin `/admin/award/[id]` (summary / body / images in place, People in an EditPanel via `Editable panelTitle`, delete with confirmation; partial save actions in `award-actions.ts`), `not-found.tsx` (root and `(public)`), redirects in `next.config.mjs`. `AWARD_DETAIL_AVAILABLE` is now `true` (Home cards link to the detail page).
 - Step 6 (Project List / Detail): approved; Award/Home regression after the shared refactors verified — public `/project` (`components/public/project/ProjectList`, `ProjectCard` + `useHoverCycle`, `ProjectTag`, `ProjectPage`), `/project/[id]` (`ProjectDetail`), shared `components/public/people/PeopleList` (Award People + Project member), `components/public/ui/ScrollToTop`, `useUrlSearch`; admin `/admin/project` (`AdminProjectList`, `ProjectForm`) and `/admin/project/[id]` (`ProjectDetailEditors`), actions in `project-actions.ts`. Legacy `(public)/project/*` and `data/project.json` removed.
+- Step 7 (Team): approved (pixel match yields to operational stability: addresses wrap from the stored addressLines, no forced Figma line breaks; long 1920 Research lines wrap inside the column) — public `/team` (`components/public/team/`: TeamPage, TeamIntro, ProfessorProfile, ProfessorPhotos, MemberSection, TeamMember; `config/team.ts`), admin `/admin/team` (`TeamEditors`, `AdminMemberSection`, `MemberForm`, kit `edit/StringListEditor`), actions in `team-actions.ts`. `professor.json` gained `teamIntro`; the dev store's empty initial profile was replaced by the Figma profile as a new version. Legacy `data/members.json` removed.
 - Note: data written outside the admin (scripts) does not invalidate the Next data cache; a local `next build` can reuse `.next/cache` from an earlier build (clear it when testing with script-written data).

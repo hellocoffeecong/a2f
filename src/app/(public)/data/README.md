@@ -6,7 +6,6 @@
 - `news.json`: 뉴스 목록
 - `education.json`: 교육 프로젝트 목록
 - `publication.json`: 논문/출판 목록
-- `members.json`: 구성원(교수/학생) 목록
 
 ## 빠른 추가 방법
 1. `templates/*.template.json`에서 원하는 템플릿을 복사
@@ -25,4 +24,3 @@
 - `templates/news.template.json`
 - `templates/education.template.json`
 - `templates/publication.template.json`
-- `templates/members.template.json`

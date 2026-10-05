@@ -8,6 +8,7 @@ import {
   TEAM_DEGREES,
 } from "@/config/content";
 import { HOME_VISUAL_SLOTS } from "@/config/home";
+import { DEFAULT_TEAM_INTRO_TEXT } from "@/config/team";
 import type { DataKey } from "@/config/storage";
 import {
   dateSchema,
@@ -113,8 +114,18 @@ export const projectSchema = z.object({
 
 const sectionLines = z.array(requiredText);
 
-// The "Prof." prefix before the English name is rendered by the UI, not stored.
+// Team page intro ("We are researchers …" + one photo). Team-page-only, so it lives with the
+// professor profile. Versions saved before step 7 read as the Figma copy without a photo.
+export const teamIntroSchema = z.object({
+  text: optionalText,
+  image: imageRefSchema.optional(),
+});
+
+// The "Prof." prefix before the English name is rendered by the UI, not stored. The Korean
+// subtitle is composed from nameKo + title + department ("류안영 교수, 인제대학교 멀티미디어학과").
+// Contact is the professor's own (not settings.contact).
 export const professorSchema = z.object({
+  teamIntro: teamIntroSchema.default(() => ({ text: DEFAULT_TEAM_INTRO_TEXT })),
   name: requiredText,
   nameKo: optionalText,
   title: optionalText,

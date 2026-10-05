@@ -1,6 +1,6 @@
 # A2F Lab 웹사이트 — 작업 현황 / TODO
 
-> 마지막 업데이트: 2026-10-04
+> 마지막 업데이트: 2026-10-05
 > 기준 문서: [CLAUDE.md](CLAUDE.md) (§7A 확정 결정사항, §7B CSS, §7C Admin in-context editing, §31 단계 순서, §39 현재 상태), [HOME_ANIMATION_GUIDE.md](HOME_ANIMATION_GUIDE.md)
 
 ---
@@ -184,10 +184,18 @@
 - [ ] `news`, `education`, `publication` legacy 페이지 정리 (Publication은 Notion 링크) — 이후 단계
 - [x] 커밋 & push
 
-### 새 단계 7. Team Public UI + 편집
-- [ ] 교수(영역별 string[], 사진 최대 3장 3초 회전), Student / Alumni (순서 변경)
-- [ ] Admin `/admin/team`
-- [ ] 기존 `(public)/data/*.json` 삭제 (모든 데이터 이전 후) → 전체 lint 오류 해소
+### 새 단계 7. Team Public UI + 편집 — 승인 (2026-10-05)
+- [x] Public `/team`: 상단 소개(teamIntro 문구 + 사진), 교수(이름·부제 조합·연락처·사진 최대 3장·4개 영역), Student / Alumni (1 / 2 / 3 / 3열) — 365/768/1440/1920 Figma 비교
+- [x] 교수 사진: 약 3초 자동 회전(crossfade), 표시기 클릭 즉시 선택, hover·키보드 포커스 시 일시정지, reduced motion이면 정지. 1장이면 표시기 없음, 0장이면 사진 영역 생략
+- [x] `professor.json`에 `teamIntro { text, image? }` 추가 (이전 버전은 Figma 문구로 읽힘). 연락처는 교수 자체 필드 (settings와 공유 안 함)
+- [x] dev store의 초기(빈) 교수 프로필 → Figma 실제 프로필 내용으로 새 버전 저장 (§31 콘텐츠 이관)
+- [x] Admin `/admin/team`: 소개 문구·사진, 이름/소속, 연락처(패널), 사진(패널, 최대 3장, 자동 회전 꺼짐), 4개 영역 `StringListEditor`(추가·수정·삭제·↑↓), Student/Alumni 추가·수정·삭제(확인)·↑↓ (order 재정렬)
+- [x] 빈 목록: Public은 섹션 숨김, Admin은 "등록된 구성원이 없습니다" + [추가]
+- [x] 검증용 데이터 → 새 버전으로 정리 (professor v35 = Figma 프로필·사진 없음, members v15 = 빈 목록)
+- [x] legacy `data/members.json`, `templates/members.template.json` 삭제
+- [ ] 실제 교수 사진·소개 사진·구성원 등록 (Admin에서, 운영자)
+- [ ] 남은 legacy `(public)/data/*.json`(news, education, publication) 삭제 → `news`/`education`/`publication` 페이지 정리 때
+- [x] 커밋 & push
 
 ### 새 단계 8. Responsive / Animation / QA / 배포
 - [ ] **ffmpeg 설치 여부 결정** → ani1(Award hover, 0:2757) / ani2(Project hover, 0:2875) / ani3(Home scroll, 0:2642) 각각 분석 → 계획 보고
