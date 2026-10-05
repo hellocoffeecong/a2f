@@ -5,12 +5,42 @@
 
 ---
 
-## 내일 시작할 때
+## ▶ 다시 시작할 때 (인계 — 2026-10-05 기준)
 
-1. Claude Code 새 세션을 열고 `/mcp`에서 `figma · connected`인지 확인
-2. 아래 프롬프트로 시작:
-   > todo.md와 CLAUDE.md를 읽고 현재 상태를 파악해줘. 그다음 "다음 할 일"의 1번부터 진행 계획을 보고하고 멈춰.
-3. **아직 커밋 안 됨** — 아래 "커밋 대기" 참고. 작업 전에 커밋할지 먼저 결정
+### 현재 상태 한 줄 요약
+**개발(Step 1~8) 완료, production 배포 Ready, 외부 입력 대기 중.** Step 9(의뢰자 계정 이전)는 **지시가 있을 때까지 시작하지 않는다.**
+
+- 코드: GitHub `swhwang81/a2f` `main` 최신 `3f43146` (로컬 변경 없음)
+- 배포: https://a2f-beryl.vercel.app (Vercel 프로젝트 `a2f`, 계정 swhwang81)
+- 데이터(dev Blob `a2f-dev-blob`): awards / projects / members **비어 있음**, professor = Figma 프로필(사진 없음), home 콜라주 = 임시 이미지, settings = 현재 값. 테스트 데이터는 모두 정리됨
+- Env: `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`(업로드에 필수), `AUTH_BLOB_STORE_ID`, `SESSION_SECRET`. **미설정**: `NOTION_PUBLICATION_URL`, `NEXT_PUBLIC_SITE_URL` (→ 지금은 Publication 메뉴 비활성, 모든 페이지 noindex)
+- Blob read-write 토큰: 두 저장소 모두 Revoke 확인 완료(OIDC만 사용). Restore/Rotate 하지 말 것
+
+### 세션 시작 전 확인 (계정 전환 주의)
+1. 이 Mac의 `gh` 활성 계정을 이 프로젝트 계정으로 되돌린다: `gh auth status` → 필요하면 `gh auth switch -u swhwang81`
+2. Vercel CLI도 swhwang81 계정인지 확인: `npx vercel whoami` (다르면 `npx vercel login`)
+3. 로컬 env 갱신(OIDC 토큰 약 12시간 만료): `npx vercel env pull .env.local --yes`
+   - 끌어온 파일에 `AUTH_BLOB_WEBHOOK_PUBLIC_KEY`가 다시 생기면 지워도 됨(미사용)
+4. `/mcp`에서 `figma · connected` 확인
+5. 시작 프롬프트 예: "todo.md와 CLAUDE.md를 읽고 현재 상태를 파악한 뒤, 아래 '다음 할 일' 중 지금 할 수 있는 것을 보고하고 멈춰."
+
+### 다음 할 일 (순서대로, 사용자 지시가 있을 때만)
+1. **데모 데이터 검수 (dev 저장소)** — 의뢰자에게 받은 데모 데이터를 사용자가 Admin(`/admin`)에서 직접 입력하고 확인한다.
+   - Claude 역할: 입력 중 문제/버그 확인, 화면 검수(4개 폭 + 애니메이션), 필요한 수정. 데이터를 임의로 넣거나 지우지 않는다.
+   - 검수가 끝나면 dev 데이터는 이전 대상이 아님(의뢰자 저장소에는 이전 후 바로 입력 예정)
+2. **도메인 / Notion 주소 수령 후** — `NEXT_PUBLIC_SITE_URL`, `NOTION_PUBLICATION_URL` 설정 → 재배포 → 색인 허용·sitemap·robots·`/publication` redirect·GNB 새 탭 확인 (CLAUDE.md §34)
+3. **Step 9 의뢰자 계정 이전** — 의뢰자의 GitHub / Vercel 주소를 받은 뒤에만. 절차: [docs/MIGRATION.md](docs/MIGRATION.md), 아래 "새 단계 9"
+   - 운영 데이터는 이전 후 의뢰자 저장소에 바로 입력할 계획 → dev Blob 데이터 이전(`blob:export/import`)은 필요 없을 가능성이 높음(이전 시 다시 확인)
+
+### 사용자가 직접 확인할 항목 (Claude는 로그인 정보·SESSION_SECRET을 요청/변경하지 않음)
+- Production Admin 전체: 로그인/로그아웃, `/admin/account` 변경, 이미지 업로드, 각 페이지 편집과 공개 반영, 동시 편집 충돌
+- 실제 Safari / iPhone / iPad (지금까지는 Chrome 시뮬레이션으로만 검증)
+
+### 작업 규칙 요약 (자세한 것은 CLAUDE.md)
+- 보고는 한국어. 단계마다 분석 → 계획 보고 → 승인 → 구현 → 검증 → 보고 → 멈춤
+- 테스트 데이터는 `[..-qa]`처럼 표시해서 새 버전으로 넣고, 끝나면 **새 빈 버전으로 정리**(버전 삭제·재사용 금지, CLAUDE.md §25-8)
+- 스크립트로 쓴 데이터는 공개 캐시를 갱신하지 않는다(Admin 저장만 갱신). 로컬 빌드 검증 시 `.next/cache` 삭제
+- 공유 dev 저장소: 로컬과 production이 같은 Blob을 씀 → 임시 데이터가 있는 동안 production Admin 저장 금지
 
 ---
 
@@ -238,17 +268,22 @@
 ---
 
 ## ❓ 아직 결정 안 된 것
-- [ ] ffmpeg 설치 (애니메이션 단계 전)
 - [ ] `A2F_Lab_Development_Guide.md`도 확정사항에 맞게 수정할지 (현재는 CLAUDE.md §7A가 우선)
+- [ ] Step 9: 의뢰자 GitHub로 커밋 기록을 유지해 옮길지(repo transfer) / 새 repo에 push할지
+- (해결) ffmpeg — 애니메이션은 설치 없이 분석·구현 완료
 
 ## ⚠️ 알아둘 것
-- 기존 Public 페이지(`src/app/(public)/*.js`)는 **레거시** — UI 단계 전까지 수정하지 않음
-- 운영 JSON이 아직 git에 있음 (`src/app/(public)/data/`) — Phase 11에서 제거
-- dev 의존성(`eslint-config-next`)에 high 취약점 5건 남음 (배포 런타임과 무관)
-- 전역 npm 캐시 권한 문제 → `sudo chown -R 501:20 ~/.npm` 실행하면 해결 (아직 미해결이면 `npx --cache /tmp/npm-cache-a2f ...`로 우회)
+- Legacy 페이지·JSON은 모두 삭제됨 (`/news`, `/education`은 404, `/publication`은 env 있을 때 Notion으로 redirect)
+- 미사용 헬퍼 `ensureDocument()`(lib/blob/initialize), `createId()`(lib/utils/id)는 Step 9 빈 저장소 초기화용으로 남겨 둠
+- `npm audit`: 개발 의존성(eslint 계열)에 high 5건, 배포 런타임(`--omit=dev`)은 0건 — `audit fix --force`는 하지 않음
+- 전역 npm 캐시 권한 문제 → `sudo chown -R 501:20 ~/.npm` (미해결이면 `npx --cache /tmp/npm-cache-a2f ...`로 우회)
 - SVG 4개(1440/1920/768 Home, 768 Hamburger)는 로컬 렌더러로 안 열림 → Figma나 PDF로 확인
+- 애니메이션 확인 조건: 브라우저 폭 1440 이상 + 마우스 + reduced motion 꺼짐 (외부 모니터 1288 폭에서는 태블릿 레이아웃이라 ani1/ani2가 꺼짐 → ⌘− 로 축소해서 확인)
 
-## 📦 커밋 상태
-- `1be8245` Phase 1·2 + 문서 (push 완료)
-- `74e96b5` Phase 3 + 버전 파일 저장 방식 (push 완료)
-- `cc7dab5` Phase 4 + 관리자 계정 Private store + AdminBar 구조 + 디자인 시스템 시작 (push 완료, 배포 Ready: https://a2f-beryl.vercel.app)
+## 📦 커밋 상태 (모두 push 완료, `main`)
+- `1be8245` Phase 1·2 / `74e96b5` Phase 3 / `cc7dab5` Phase 4 + 계정 Private store
+- `07c67ed` Step 2 Header/Footer / `d416948` Step 3 이미지 업로드
+- `16dde2e` Step 4a Home / `5342284` Step 4b 애니메이션
+- `6daf31c` Step 5 Award Detail / `88c6b34` Step 6 Project
+- `eb16c3a` Step 7 Team / `42f0a88` Legacy cleanup + metadata·sitemap·robots
+- `3f43146` Step 8 최종 QA 수정 (최신, production Ready)
