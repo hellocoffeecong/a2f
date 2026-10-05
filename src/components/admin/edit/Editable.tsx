@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import EditPanel from "./EditPanel";
 import styles from "./Editable.module.css";
 
@@ -29,12 +29,21 @@ export default function Editable({ label, editor, panelTitle, children }: Props)
   const [editing, setEditing] = useState(false);
   const context = { close: () => setEditing(false) };
   const inPanel = panelTitle !== undefined;
+  const chipRef = useRef<HTMLButtonElement>(null);
+  const wasEditing = useRef(false);
+
+  // The in-place editor replaces the chip, so focus would be lost on close (저장 / 취소 / Esc):
+  // give it back to the chip. (The EditPanel dialog restores focus by itself.)
+  useEffect(() => {
+    if (wasEditing.current && !editing && !inPanel) chipRef.current?.focus();
+    wasEditing.current = editing;
+  }, [editing, inPanel]);
 
   return (
     <div className={`${styles.region} ${editing ? styles.editing : ""}`}>
       {children}
       {!(editing && !inPanel) && (
-        <button type="button" className={styles.chip} onClick={() => setEditing(true)} aria-label={`${label} 수정`}>
+        <button ref={chipRef} type="button" className={styles.chip} onClick={() => setEditing(true)} aria-label={`${label} 수정`}>
           수정
         </button>
       )}

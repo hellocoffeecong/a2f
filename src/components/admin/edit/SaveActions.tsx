@@ -22,8 +22,12 @@ export function useSaveAndClose(save: () => Promise<SaveOutcome>) {
         setError(outcome.message);
         return;
       }
-      close();
-      router.refresh();
+      // Close together with the refreshed page (new data and version), so an editor opened
+      // right after this save never starts from the old version (false conflict).
+      startTransition(() => {
+        router.refresh();
+        close();
+      });
     });
   return { close, error, pending, submit };
 }

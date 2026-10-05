@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 // Shared by the public site and the admin; each area adds its own chrome in a nested layout.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html className={hanken.variable}>
+    <html lang="ko" className={hanken.variable}>
       <head>
         <link rel="stylesheet" href={PRETENDARD_CSS} crossOrigin="anonymous" />
       </head>

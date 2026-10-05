@@ -71,12 +71,12 @@
 - [x] `npx vercel link`, `npx vercel env pull .env.local` → `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`, `VERCEL_OIDC_TOKEN`
 - [x] `npm run blob:test` 6단계 모두 통과 (OIDC)
 - [x] 최초 생성 충돌(일반 `BlobError`) → `saveDocument`에서 재조회 후 conflict 처리
-- [ ] 다음 push로 재배포된 뒤 Vercel 대시보드에서 저장소 read-write 토큰 **Revoke** (OIDC만 사용)
+- [x] 저장소 read-write 토큰 Revoke 확인 (2026-10-05, OIDC만 사용)
 - 참고: `VERCEL_OIDC_TOKEN`은 약 12시간 후 만료 → 로컬 인증 오류 시 `npx vercel env pull .env.local --yes` 다시 실행
 
 ### 2. 커밋 ✅ (2026-10-04)
 - [x] Phase 1·2 + 문서 + `.mcp.json` 커밋 `1be8245` → `main` push → Vercel 재배포 Ready (Next 16.3.8)
-- [ ] Blob store `a2f-dev-blob`의 read-write 토큰 **Revoke** (재배포 완료됐으므로 지금 가능)
+- [x] Blob store `a2f-dev-blob`의 read-write 토큰 Revoke 확인 (2026-10-05, 이미 Revoke 상태)
 - 참고: 이 Mac의 `gh` 활성 계정은 `swhwang81` (다른 프로젝트에서 `hellocoffeecong` 필요 시 `gh auth switch -u hellocoffeecong`)
 - 빌드 로그 경고 (배포에는 영향 없음): `engines` 범위 지정 안내, ESLint 9 지원 종료 안내 → `eslint-config-next`가 ESLint 10을 지원하면 업그레이드 검토
 
@@ -203,11 +203,18 @@
 - [x] `globals.css` legacy `main` 규칙과 각 페이지의 `max-width: none` 덮어쓰기 제거
 - [x] 로그인/계정 폼 365 가로 넘침 수정 (`box-sizing: border-box`)
 - [x] `AUTH_BLOB_WEBHOOK_PUBLIC_KEY` 삭제 (Production·Preview·Development). 계정 읽기, private 저장, 세션 epoch, 로그인 실패 경로 확인
-- [ ] Blob store read-write 토큰: API상 두 store 모두 연결 env에 토큰 없음, `isTokenExpired: true`. 대시보드 토큰 목록 확인·Revoke는 CLI/API로 불가 → 운영자가 대시보드에서 확인
+- [x] Blob store read-write 토큰: 운영자 확인 (2026-10-05) — a2f-dev-blob, a2f-dev-private 모두 legacy 토큰 이미 Revoke 상태("Restore Read-Write Token" 표시). Restore/Rotate/Delete 하지 않음, OIDC 유지
 - [x] `getSiteUrl()` + metadataBase / sitemap / robots (최종 도메인 env가 있을 때만 색인)
 - [ ] 최종 도메인 확정 시 `NEXT_PUBLIC_SITE_URL` 설정 → 재배포
 
-### 새 단계 8. Responsive / Animation / QA / 배포
+### 새 단계 8. 최종 QA — 승인 (2026-10-05)
+- [x] 로컬 production 빌드 + 임시 [8-qa] 데이터로 Public/Admin/반응형/애니메이션/접근성/SEO 회귀 → 새 버전으로 정리
+- [x] QA 중 수정: 저장 직후 가짜 충돌, 인라인 편집 후 focus 복귀, `<html lang="ko">`, 미사용 `public/` 파일 삭제
+- [x] ani1: hover 가능 + fine pointer에서만 실행. 1440+ 터치/coarse 기기는 날짜 항상 표시, 탭 한 번으로 상세 이동
+- 외부 입력 대기: 최종 도메인, NOTION_PUBLICATION_URL, Award/Project/Student/Alumni 데이터, 교수 사진, Team 소개 사진, Home 콜라주 최종 이미지
+- 운영자 확인: Production Admin (Blob read-write 토큰은 확인 완료)
+
+### (이전 계획) 새 단계 8. Responsive / Animation / QA / 배포
 - [ ] **ffmpeg 설치 여부 결정** → ani1(Award hover, 0:2757) / ani2(Project hover, 0:2875) / ani3(Home scroll, 0:2642) 각각 분석 → 계획 보고
 - [ ] 애니메이션 라이브러리 필요 여부 결정 (분석 후)
 - [ ] 365 / 768 / 1440 / 1920 반응형 QA (Public + Admin)
