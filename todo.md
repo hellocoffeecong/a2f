@@ -181,7 +181,7 @@
 - [x] Admin `/admin/project`(추가·수정·삭제), `/admin/project/[id]`(요약·본문·이미지 순서/삭제·멤버 패널·삭제)
 - [x] 기존 `(public)/project/*`, `data/project.json` 삭제 / 검증용 [6-test] 데이터 → 새 빈 버전(projects v128)
 - [x] 공통 refactor 후 Award / Home Award 회귀 테스트 (임시 [7r-test] 데이터 → 새 빈 버전 awards v30)
-- [ ] `news`, `education`, `publication` legacy 페이지 정리 (Publication은 Notion 링크) — 이후 단계
+- [x] `news`, `education`, `publication` legacy 페이지 정리 (Legacy Cleanup 단계, 2026-10-05)
 - [x] 커밋 & push
 
 ### 새 단계 7. Team Public UI + 편집 — 승인 (2026-10-05)
@@ -194,8 +194,18 @@
 - [x] 검증용 데이터 → 새 버전으로 정리 (professor v35 = Figma 프로필·사진 없음, members v15 = 빈 목록)
 - [x] legacy `data/members.json`, `templates/members.template.json` 삭제
 - [ ] 실제 교수 사진·소개 사진·구성원 등록 (Admin에서, 운영자)
-- [ ] 남은 legacy `(public)/data/*.json`(news, education, publication) 삭제 → `news`/`education`/`publication` 페이지 정리 때
+- [x] 남은 legacy `(public)/data/*.json`(news, education, publication) 삭제 (Legacy Cleanup 단계)
 - [x] 커밋 & push
+
+### Legacy Cleanup + Production Preparation — 승인 (2026-10-05)
+- [x] `/news`, `/education`, `/publication` 페이지와 `(public)/data/` 전체 삭제 → `/news`·`/education` 404
+- [x] `/publication`: `NOTION_PUBLICATION_URL`이 있으면 307 redirect (next.config, 빌드 시점), 없으면 404. GNB는 그대로 (없으면 비활성, 있으면 새 탭)
+- [x] `globals.css` legacy `main` 규칙과 각 페이지의 `max-width: none` 덮어쓰기 제거
+- [x] 로그인/계정 폼 365 가로 넘침 수정 (`box-sizing: border-box`)
+- [x] `AUTH_BLOB_WEBHOOK_PUBLIC_KEY` 삭제 (Production·Preview·Development). 계정 읽기, private 저장, 세션 epoch, 로그인 실패 경로 확인
+- [ ] Blob store read-write 토큰: API상 두 store 모두 연결 env에 토큰 없음, `isTokenExpired: true`. 대시보드 토큰 목록 확인·Revoke는 CLI/API로 불가 → 운영자가 대시보드에서 확인
+- [x] `getSiteUrl()` + metadataBase / sitemap / robots (최종 도메인 env가 있을 때만 색인)
+- [ ] 최종 도메인 확정 시 `NEXT_PUBLIC_SITE_URL` 설정 → 재배포
 
 ### 새 단계 8. Responsive / Animation / QA / 배포
 - [ ] **ffmpeg 설치 여부 결정** → ani1(Award hover, 0:2757) / ani2(Project hover, 0:2875) / ani3(Home scroll, 0:2642) 각각 분석 → 계획 보고

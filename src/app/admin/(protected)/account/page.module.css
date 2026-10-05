@@ -1,9 +1,7 @@
-/* `max-width`/`margin` override the legacy global `main` rule. */
 .page {
   display: flex;
   justify-content: center;
 
-  max-width: none;
   box-sizing: border-box;
 
   margin: 0;

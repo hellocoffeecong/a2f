@@ -418,7 +418,7 @@ layout → size → spacing → typography → color/background → border → e
 
 ### Existing code
 - When editing a file within the task scope, move any inline styles found there into CSS Modules — no unrelated refactoring, behavior changes or design changes.
-- Legacy note: the current `src/app/globals.css` contains page styles (`.hero` etc.) from the old site. Clean it up when those pages are replaced in the UI phases, not before.
+- `globals.css` was cleaned in the legacy-cleanup step: only `body { margin: 0 }` and the `html` scroll padding for the sticky header remain. Every `<main>` sets its own padding.
 
 ### Report after every UI task
 - CSS Module files created / modified
@@ -509,7 +509,7 @@ The same GNB component is reused; its links go to the `/admin/...` equivalents (
 /team
 ```
 
-Publication opens the configured external Notion publication page.
+Publication opens the configured external Notion publication page. There is no internal `/publication` page: with `NOTION_PUBLICATION_URL` set, `/publication` redirects (307) to it (`next.config.mjs`, read at build time like the GNB link); without it, `/publication` is a 404.
 
 ---
 
@@ -1133,14 +1133,18 @@ Check:
 Review at minimum:
 
 ```text
-VERCEL_OIDC_TOKEN      (preferred Blob auth; provided on Vercel, pulled locally via `vercel env pull`)
-BLOB_STORE_ID          (required with OIDC)
-BLOB_READ_WRITE_TOKEN  (fallback only)
-AUTH_BLOB_STORE_ID     (private store for admin credentials; connect that store with prefix AUTH_BLOB)
+VERCEL_OIDC_TOKEN        (Blob auth; provided on Vercel, pulled locally via `vercel env pull`)
+BLOB_STORE_ID            (required with OIDC)
+BLOB_WEBHOOK_PUBLIC_KEY  (required: handleUploadPresigned throws without it; auto-created with the public store)
+AUTH_BLOB_STORE_ID       (private store for admin credentials; connect that store with prefix AUTH_BLOB)
 SESSION_SECRET
-NOTION_PUBLICATION_URL
-NEXT_PUBLIC_SITE_URL
+NOTION_PUBLICATION_URL   (optional; GNB link + /publication redirect, read at build time)
+NEXT_PUBLIC_SITE_URL     (optional until the final domain; see below)
 ```
+
+- Do not add `BLOB_READ_WRITE_TOKEN` (OIDC only; it survives as a fallback in `blob:test` only).
+- `AUTH_BLOB_WEBHOOK_PUBLIC_KEY` was removed (referenced by neither our code nor `@vercel/blob`; the private store has no upload path). Reconnecting the private store may create it again — it can be removed again.
+- Site URL: `getSiteUrl()` in `src/config/site.ts` is the only source of absolute URLs (`metadataBase`, `sitemap.ts`, `robots.ts`): `NEXT_PUBLIC_SITE_URL` → `https://` + `VERCEL_PROJECT_PRODUCTION_URL` → `http://localhost:3000`. Only with `NEXT_PUBLIC_SITE_URL` set are pages indexable (robots announces the sitemap, no `noindex`); otherwise every page is `noindex, nofollow` and robots.txt only blocks `/admin` (crawlers must be able to fetch a page to see its noindex). Setting the final domain = set this one env and redeploy.
 
 Admin username/password are not environment variables (see §23). Prefer OIDC for Blob. Browser image uploads must use `handleUploadPresigned` / `uploadPresigned` (works with OIDC); the older `handleUpload` requires `BLOB_READ_WRITE_TOKEN`.
 
@@ -1257,7 +1261,7 @@ Do not automatically proceed to the next major phase when approval is expected.
 - Phase 4 (admin authentication): done and verified on a production build. Root `src/app/layout.tsx` = html/body, fonts (Hanken via next/font, Pretendard CDN), `styles/tokens.css`, `styles/typography.css`, globals; public chrome in `src/app/(public)/layout.tsx`; admin in `src/app/admin/` (`login/`, `(protected)/` guarded by `requireAdmin()` and showing `AdminBar`, `(protected)/account/`); first gate in `src/proxy.ts`. `SESSION_SECRET` is set in Vercel for all three environments.
 - Admin credentials moved from env vars to the private Blob store (§23): code done (`versioned-store` factory shared with content, `account-store`, epoch-based session invalidation, `/admin/account`, `npm run admin:bootstrap`). Private store `a2f-dev-private` connected; verified on a production build (24 checks: login, current-password checks, username-only and password changes, all sessions invalidated, logout; anonymous access 403). The test account was deleted — the private store is empty until the owner runs `npm run admin:bootstrap`.
 - Admin direction changed to in-context editing (§7C) and the phase order to page-by-page "public UI + editing" (§31). Step 1 (auth cleanup + AdminBar structure) is done; `/admin` shows a placeholder until the Home step. Shared design system so far: tokens, typography, fonts, `Logo` (Figma assets in `src/assets/brand/`), `Button`, `form/Field`.
-- Existing public pages under `src/app/(public)/*.js` and `src/app/(public)/data/*.json` are legacy: leave them unchanged (including their lint errors) until they are replaced in the UI phases.
+- Legacy cleanup (after step 7): the old `/news`, `/education`, `/publication` pages, `src/app/(public)/data/` (legacy JSON, templates, README) and the legacy global `main` rule were removed; `/news` and `/education` are 404. No reference to the deleted old Blob store remains. Lint: 0 errors, 0 warnings. Production preparation: `getSiteUrl()` + `metadataBase` / `sitemap.ts` (static pages + existing award/project details) / `robots.ts`; `AUTH_BLOB_WEBHOOK_PUBLIC_KEY` removed from Vercel.
 - Not yet decided: ffmpeg installation (decide before the animation phase).
 
 - Step 2 (common Header / Footer): done — `components/public/layout/` (SiteHeader, HeaderNav, MobileMenu, FooterView, SiteFooter), sticky header (below the AdminBar in admin via `--sticky-offset`), hamburger panel (0.25 s slide/fade, off with reduced motion), footer in-context editing (`components/admin/edit/Editable`, `InlineTextEditor`, `editors/FooterTextEditor`, `admin/(protected)/settings-actions.ts`). Verified against Figma at 365/768/1440/1920 and with an admin editing E2E test.

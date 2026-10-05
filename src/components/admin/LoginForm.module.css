@@ -3,6 +3,7 @@
   flex-direction: column;
 
   width: 100%;
+  box-sizing: border-box; /* padding inside the 100% width (no horizontal scroll at 365) */
   max-width: 400px;
 
   gap: var(--space-20);

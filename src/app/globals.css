@@ -6,9 +6,3 @@ body {
 html {
   scroll-padding-top: calc(var(--sticky-offset) + var(--header-height));
 }
-
-main {
-  padding-inline: clamp(1rem, 4vw, 4rem);
-  max-width: 1000px;
-  margin: 1rem auto;
-}

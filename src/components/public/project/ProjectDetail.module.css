@@ -5,8 +5,6 @@
  * Images keep their original ratio (no crop).
  */
 .main {
-  max-width: none;     /* overrides the legacy global `main` rule */
-
   margin: 0;
   padding: 30px var(--page-padding-mobile) 98px;
 }

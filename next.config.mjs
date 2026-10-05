@@ -1,3 +1,7 @@
+// Publication is an external Notion page. The old /publication URL follows it when the URL
+// is configured (read at build time, like the GNB link); without it, /publication is a 404.
+const publicationUrl = process.env.NOTION_PUBLICATION_URL;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // `next dev` would otherwise append its own agent notes to CLAUDE.md (project rules file).
@@ -7,6 +11,7 @@ const nextConfig = {
     return [
       { source: "/award", destination: "/#award", permanent: false },
       { source: "/admin/award", destination: "/admin#award", permanent: false },
+      ...(publicationUrl ? [{ source: "/publication", destination: publicationUrl, permanent: false }] : []),
     ];
   },
   images: {

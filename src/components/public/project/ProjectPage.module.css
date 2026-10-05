@@ -1,8 +1,6 @@
 /* Figma project list frames: header → title 30 / 30 / 100 / 100, last row → footer 84 / 104 /
    453 / 432 (1920: grid → scroll-to-top 111, scroll-to-top → footer 100). */
 .main {
-  max-width: none;     /* overrides the legacy global `main` rule */
-
   margin: 0;
   padding: 30px var(--page-padding-mobile) 84px;
 }
