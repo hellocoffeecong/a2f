@@ -207,4 +207,7 @@ rm -rf migration-data .env.source .env.target
 | import가 "same as the source"로 중단 | `.env.target`에 source 값이 들어감 → 5-3을 의뢰자 계정으로 다시 |
 | 이미지가 깨짐 | 이미지 URL이 이전 store를 가리킴 → import 로그의 "URLs rewritten" 확인, JSON 재확인 |
 | 관리자 로그인 실패 / "아직 설정되지 않았습니다" | 의뢰자 Private store에 계정이 없음 → `npm run admin:bootstrap` 실행. `AUTH_BLOB_STORE_ID`, `SESSION_SECRET`(32자 이상) 확인. 비밀번호 분실 시 `npm run admin:bootstrap -- --reset` |
-| 저장 시 "다른 관리자가 수정" | 정상 동작(버전 충돌). 새로고침 후 다시 저장 |
+| 저장 시 "다른 관리자가 수정" | 정상 동작(버전 충돌). 새로고침 후 다시 저장. 데이터를 스크립트(import)로 넣은 직후라면 첫 저장이 충돌로 거부되면서 캐시가 갱신되므로, 새로고침하면 이전된 내용이 보인다 |
+| 새 계정에서 `admin:bootstrap`이 "Access denied" | 로컬 `.env.local`에 **이전 계정 값이 남아 있음** — `vercel link` 후 `env pull`은 기존 파일에 합친다. `.env.local`을 지우고 `npx vercel env pull .env.local --yes`로 다시 받기 (2026-10-06 실제 사례) |
+| 빌드 실패 `No blob credentials found` (Vercel) | 새 프로젝트에 Blob store가 아직 연결 안 됨 → Public store(prefix `BLOB`) 연결 후 Redeploy |
+| 배포 전체가 402 `DEPLOYMENT_DISABLED` | Hobby 공정 사용 한도 초과(2026-10-06: Blob Advanced Operations 3.9K/2K). 대시보드 Usage 확인 → Pro 업그레이드 또는 자동 해제 대기. 대량 테스트·반복 빌드를 피할 것 (CLAUDE.md §25-6) |

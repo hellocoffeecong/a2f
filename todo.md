@@ -1,46 +1,56 @@
 # A2F Lab 웹사이트 — 작업 현황 / TODO
 
-> 마지막 업데이트: 2026-10-05
+> 마지막 업데이트: 2026-10-06
 > 기준 문서: [CLAUDE.md](CLAUDE.md) (§7A 확정 결정사항, §7B CSS, §7C Admin in-context editing, §31 단계 순서, §39 현재 상태), [HOME_ANIMATION_GUIDE.md](HOME_ANIMATION_GUIDE.md)
 
 ---
 
-## ▶ 다시 시작할 때 (인계 — 2026-10-05 기준)
+## ▶ 다시 시작할 때 (인계 — 2026-10-06 기준)
 
 ### 현재 상태 한 줄 요약
-**개발(Step 1~8) 완료, production 배포 Ready, 외부 입력 대기 중.** Step 9(의뢰자 계정 이전)는 **지시가 있을 때까지 시작하지 않는다.**
+**개발(Step 1~8) 완료. 데모 확인용 계정(hellocoffeecong / Vercel "Soo's projects")으로 이전해 배포 중.** 의뢰자 계정 정보를 받으면 Step 9로 한 번 더 이전한다(지시가 있을 때만).
 
-- 코드: GitHub `swhwang81/a2f` `main` 최신 `3f43146` (로컬 변경 없음)
-- 배포: https://a2f-beryl.vercel.app (Vercel 프로젝트 `a2f`, 계정 swhwang81)
-- 데이터(dev Blob `a2f-dev-blob`): awards / projects / members **비어 있음**, professor = Figma 프로필(사진 없음), home 콜라주 = 임시 이미지, settings = 현재 값. 테스트 데이터는 모두 정리됨
-- Env: `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`(업로드에 필수), `AUTH_BLOB_STORE_ID`, `SESSION_SECRET`. **미설정**: `NOTION_PUBLICATION_URL`, `NEXT_PUBLIC_SITE_URL` (→ 지금은 Publication 메뉴 비활성, 모든 페이지 noindex)
-- Blob read-write 토큰: 두 저장소 모두 Revoke 확인 완료(OIDC만 사용). Restore/Rotate 하지 말 것
+| 구분 | 현재 (데모 확인용, 사용 중) | 예전 (개발용, 보관) |
+|---|---|---|
+| GitHub | `hellocoffeecong/a2f` = git remote **`origin`** | `swhwang81/a2f` = remote `swhwang81` (`36ba43d`까지) |
+| Vercel | 팀 `coffeecong` ("Soo's projects", Hobby), 프로젝트 `a2f` | 팀 swhwang81s-projects — **Paused** (아래 참고) |
+| 주소 | https://a2f-delta.vercel.app | https://a2f-beryl.vercel.app (402) |
+| Blob | `a2f-dev-blob`(Public) / `a2f-dev-private`(Private, prefix `AUTH_BLOB`) — 새 팀 | 같은 이름의 예전 저장소 |
+| 로컬 폴더 | `vercel link` → coffeecong / a2f | — |
 
-### 세션 시작 전 확인 (계정 전환 주의)
-1. 이 Mac의 `gh` 활성 계정을 이 프로젝트 계정으로 되돌린다: `gh auth status` → 필요하면 `gh auth switch -u swhwang81`
-2. Vercel CLI도 swhwang81 계정인지 확인: `npx vercel whoami` (다르면 `npx vercel login`)
+- 코드: `origin/main` 최신 `547e6bf` (Blob 최적화 + 충돌 시 캐시 갱신 포함)
+- 데이터(새 저장소): home v1 = 기본 문구 + 콜라주 사진 5장(예전 저장소에서 복사한 **Figma 목업 임시 이미지**), 나머지(awards / projects / members / professor / settings)는 아직 저장 전 → 코드 기본값으로 표시(Figma 교수 프로필, 빈 목록)
+- 관리자 계정: 새 private 저장소에 생성 완료(사용자가 `npm run admin:bootstrap`)
+- Env(새 프로젝트): `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`(업로드에 필수), `AUTH_BLOB_STORE_ID`, `SESSION_SECRET`(Prod·Preview = Secret, Development = Config 다른 값). **미설정**: `NOTION_PUBLICATION_URL`, `NEXT_PUBLIC_SITE_URL` → Publication 메뉴 비활성, 모든 페이지 noindex
+
+### 왜 계정을 옮겼나 — Blob 한도 (중요)
+- 2026-10-06 09:49 KST, 예전 Hobby 팀이 **Blob Advanced Operations 3.9K / 2K** 초과로 Paused(자동 해제 2026-11-05). 원인: QA 자동화·반복 빌드에서 `list()`/`put()` 대량 사용
+- 대응(`36ba43d`): Admin 읽기도 캐시 사용 → **화면 열기 0회, 저장 1회 ≈ 4회, 이미지 1장 1회, 세션 확인 10분에 1회, Public 0회** (CLAUDE.md §25-6)
+- `547e6bf`: 스크립트로 쓴 데이터 때문에 Admin 캐시가 오래된 경우, 충돌이 나면 캐시를 갱신 → 새로고침하면 최신이 보임
+- **새 팀도 Hobby → 월 2,000회.** 대량 E2E·반복 빌드 금지, 데모 데이터 대량 입력은 나눠서, Vercel Usage에서 사용량 확인
+
+### 세션 시작 전 확인
+1. `gh auth status` → 활성 계정이 **hellocoffeecong**인지 (다른 작업으로 바꿨다면 `gh auth switch -u hellocoffeecong`)
+2. `npx vercel whoami` → hellocoffeecong 계정(팀 coffeecong)인지 (아니면 `npx vercel login`)
 3. 로컬 env 갱신(OIDC 토큰 약 12시간 만료): `npx vercel env pull .env.local --yes`
-   - 끌어온 파일에 `AUTH_BLOB_WEBHOOK_PUBLIC_KEY`가 다시 생기면 지워도 됨(미사용)
+   - **다른 계정/프로젝트로 다시 연결(`vercel link`)한 뒤에는 `.env.local`을 지우고 받을 것** — pull은 기존 파일에 합쳐서 예전 계정 값이 남는다(2026-10-06 bootstrap 실패 원인)
+   - `AUTH_BLOB_WEBHOOK_PUBLIC_KEY`가 생기면 지워도 됨(미사용)
 4. `/mcp`에서 `figma · connected` 확인
-5. 시작 프롬프트 예: "todo.md와 CLAUDE.md를 읽고 현재 상태를 파악한 뒤, 아래 '다음 할 일' 중 지금 할 수 있는 것을 보고하고 멈춰."
+5. 시작 프롬프트 예: "todo.md와 CLAUDE.md를 읽고 현재 상태를 파악한 뒤, 지금 할 수 있는 일을 보고하고 멈춰."
 
-### 다음 할 일 (순서대로, 사용자 지시가 있을 때만)
-1. **데모 데이터 검수 (dev 저장소)** — 의뢰자에게 받은 데모 데이터를 사용자가 Admin(`/admin`)에서 직접 입력하고 확인한다.
-   - Claude 역할: 입력 중 문제/버그 확인, 화면 검수(4개 폭 + 애니메이션), 필요한 수정. 데이터를 임의로 넣거나 지우지 않는다.
-   - 검수가 끝나면 dev 데이터는 이전 대상이 아님(의뢰자 저장소에는 이전 후 바로 입력 예정)
-2. **도메인 / Notion 주소 수령 후** — `NEXT_PUBLIC_SITE_URL`, `NOTION_PUBLICATION_URL` 설정 → 재배포 → 색인 허용·sitemap·robots·`/publication` redirect·GNB 새 탭 확인 (CLAUDE.md §34)
-3. **Step 9 의뢰자 계정 이전** — 의뢰자의 GitHub / Vercel 주소를 받은 뒤에만. 절차: [docs/MIGRATION.md](docs/MIGRATION.md), 아래 "새 단계 9"
-   - 운영 데이터는 이전 후 의뢰자 저장소에 바로 입력할 계획 → dev Blob 데이터 이전(`blob:export/import`)은 필요 없을 가능성이 높음(이전 시 다시 확인)
-
-### 사용자가 직접 확인할 항목 (Claude는 로그인 정보·SESSION_SECRET을 요청/변경하지 않음)
-- Production Admin 전체: 로그인/로그아웃, `/admin/account` 변경, 이미지 업로드, 각 페이지 편집과 공개 반영, 동시 편집 충돌
-- 실제 Safari / iPhone / iPad (지금까지는 Chrome 시뮬레이션으로만 검증)
+### 다음 할 일 (사용자 지시가 있을 때만)
+1. **사용자 직접 확인 (a2f-delta)** — Admin 로그인/로그아웃, 저장→공개 반영, 이미지 변경, `/admin/account` 변경, 동시 편집 충돌 / 실제 Safari·iPhone·iPad
+2. **데모 데이터 입력·검수** — 의뢰자 데모 데이터를 사용자가 Admin에서 직접 입력, Claude는 화면 검수·버그 수정. 데이터를 임의로 넣거나 지우지 않는다. Blob 한도에 유의
+3. **도메인 / Notion 주소 수령 후** — `NEXT_PUBLIC_SITE_URL`, `NOTION_PUBLICATION_URL` 설정 → 재배포 → 색인·sitemap·robots·`/publication`·GNB 확인 (CLAUDE.md §34)
+4. **Step 9 의뢰자 계정 이전** — 의뢰자 GitHub / Vercel 정보를 받은 뒤에만. 2026-10-06의 이전 과정이 리허설:
+   GitHub push → Vercel import → Public Blob(prefix `BLOB`) + Private Blob(prefix `AUTH_BLOB`, 모든 환경) 연결 → `SESSION_SECRET`(Secret: Prod·Preview / Config: Development, 다른 값) → Redeploy → 로컬 `vercel login` · `vercel link` · `.env.local` 삭제 후 `env pull` · `npm run admin:bootstrap` → 필요한 데이터만 복사(공개 URL로 읽어 새 저장소에 새 파일명으로 put + `saveDocument`, 배포/재배포 후 확인). 상세: [docs/MIGRATION.md](docs/MIGRATION.md)
 
 ### 작업 규칙 요약 (자세한 것은 CLAUDE.md)
 - 보고는 한국어. 단계마다 분석 → 계획 보고 → 승인 → 구현 → 검증 → 보고 → 멈춤
+- Claude는 로그인 정보·`SESSION_SECRET` 값을 요청하거나 출력·변경하지 않는다
 - 테스트 데이터는 `[..-qa]`처럼 표시해서 새 버전으로 넣고, 끝나면 **새 빈 버전으로 정리**(버전 삭제·재사용 금지, CLAUDE.md §25-8)
-- 스크립트로 쓴 데이터는 공개 캐시를 갱신하지 않는다(Admin 저장만 갱신). 로컬 빌드 검증 시 `.next/cache` 삭제
-- 공유 dev 저장소: 로컬과 production이 같은 Blob을 씀 → 임시 데이터가 있는 동안 production Admin 저장 금지
+- 스크립트로 쓴 데이터는 캐시를 갱신하지 않는다 → 재배포하거나 Admin에서 한 번 저장(충돌 후 새로고침)하면 반영. 로컬 빌드 검증 시 `.next/cache` 삭제
+- 로컬과 배포 사이트는 같은 Blob 저장소를 쓴다 → 임시 데이터가 있는 동안 배포 Admin에서 저장 금지
 
 ---
 
@@ -280,10 +290,12 @@
 - SVG 4개(1440/1920/768 Home, 768 Hamburger)는 로컬 렌더러로 안 열림 → Figma나 PDF로 확인
 - 애니메이션 확인 조건: 브라우저 폭 1440 이상 + 마우스 + reduced motion 꺼짐 (외부 모니터 1288 폭에서는 태블릿 레이아웃이라 ani1/ani2가 꺼짐 → ⌘− 로 축소해서 확인)
 
-## 📦 커밋 상태 (모두 push 완료, `main`)
+## 📦 커밋 상태 (모두 push 완료, `main`; 2026-10-06부터 `origin` = hellocoffeecong/a2f)
 - `1be8245` Phase 1·2 / `74e96b5` Phase 3 / `cc7dab5` Phase 4 + 계정 Private store
 - `07c67ed` Step 2 Header/Footer / `d416948` Step 3 이미지 업로드
 - `16dde2e` Step 4a Home / `5342284` Step 4b 애니메이션
 - `6daf31c` Step 5 Award Detail / `88c6b34` Step 6 Project
 - `eb16c3a` Step 7 Team / `42f0a88` Legacy cleanup + metadata·sitemap·robots
-- `3f43146` Step 8 최종 QA 수정 (최신, production Ready)
+- `3f43146` Step 8 최종 QA 수정
+- `36ba43d` Blob advanced operation 최적화 (예전 저장소 `swhwang81`의 마지막 커밋)
+- `547e6bf` 충돌 시 캐시 갱신 — 여기부터 `origin` = hellocoffeecong/a2f
