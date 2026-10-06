@@ -6,7 +6,7 @@
 // After setup, the admin changes the username/password at /admin/account.
 // The password is read without echo, hashed here with the same code the server uses, and
 // neither the password nor the hash is ever printed. A reset changes the session epoch, so
-// existing sessions stop working (within about a minute — see lib/auth/account-cache).
+// existing sessions stop working (within about 10 minutes — see lib/auth/account-cache).
 //
 // Runs with tsx under the "react-server" condition so the server-only modules can be imported.
 

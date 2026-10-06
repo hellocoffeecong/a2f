@@ -25,7 +25,12 @@ export async function updateHome(expectedVersion: number, update: Update<HomeCon
   const next = update(current?.data ?? DEFAULT_CONTENT.home.data);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("home", expectedVersion, { data: next });
-  if (!result.ok) return { ok: false, message: result.message };
+  if (!result.ok) {
+    // The stored latest is newer than the cache said (e.g. data written by a script): refresh
+    // the cache so a reload shows the latest version instead of conflicting again.
+    refreshContent("home");
+    return { ok: false, message: result.message };
+  }
   refreshContent("home");
   return { ok: true };
 }
@@ -36,7 +41,12 @@ export async function updateSettings(expectedVersion: number, update: Update<Set
   const next = update(current?.data ?? DEFAULT_CONTENT.settings.data);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("settings", expectedVersion, { data: next });
-  if (!result.ok) return { ok: false, message: result.message };
+  if (!result.ok) {
+    // The stored latest is newer than the cache said (e.g. data written by a script): refresh
+    // the cache so a reload shows the latest version instead of conflicting again.
+    refreshContent("settings");
+    return { ok: false, message: result.message };
+  }
   refreshContent("settings");
   return { ok: true };
 }
@@ -47,7 +57,12 @@ export async function updateAwards(expectedVersion: number, update: Update<Award
   const next = update(current?.items ?? []);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("awards", expectedVersion, { items: next });
-  if (!result.ok) return { ok: false, message: result.message };
+  if (!result.ok) {
+    // The stored latest is newer than the cache said (e.g. data written by a script): refresh
+    // the cache so a reload shows the latest version instead of conflicting again.
+    refreshContent("awards");
+    return { ok: false, message: result.message };
+  }
   refreshContent("awards");
   return { ok: true };
 }
@@ -58,7 +73,12 @@ export async function updateProjects(expectedVersion: number, update: Update<Pro
   const next = update(current?.items ?? []);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("projects", expectedVersion, { items: next });
-  if (!result.ok) return { ok: false, message: result.message };
+  if (!result.ok) {
+    // The stored latest is newer than the cache said (e.g. data written by a script): refresh
+    // the cache so a reload shows the latest version instead of conflicting again.
+    refreshContent("projects");
+    return { ok: false, message: result.message };
+  }
   refreshContent("projects");
   return { ok: true };
 }
@@ -69,7 +89,12 @@ export async function updateProfessor(expectedVersion: number, update: Update<Pr
   const next = update(current?.data ?? DEFAULT_CONTENT.professor.data);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("professor", expectedVersion, { data: next });
-  if (!result.ok) return { ok: false, message: result.message };
+  if (!result.ok) {
+    // The stored latest is newer than the cache said (e.g. data written by a script): refresh
+    // the cache so a reload shows the latest version instead of conflicting again.
+    refreshContent("professor");
+    return { ok: false, message: result.message };
+  }
   refreshContent("professor");
   return { ok: true };
 }
@@ -80,7 +105,12 @@ export async function updateMembers(expectedVersion: number, update: Update<Memb
   const next = update(current?.items ?? []);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("members", expectedVersion, { items: next });
-  if (!result.ok) return { ok: false, message: result.message };
+  if (!result.ok) {
+    // The stored latest is newer than the cache said (e.g. data written by a script): refresh
+    // the cache so a reload shows the latest version instead of conflicting again.
+    refreshContent("members");
+    return { ok: false, message: result.message };
+  }
   refreshContent("members");
   return { ok: true };
 }
