@@ -9,7 +9,7 @@ import {
   AwardSummaryEditor,
 } from "@/components/admin/editors/AwardDetailEditors";
 import AwardDetail from "@/components/public/award/AwardDetail";
-import { readDocument } from "@/lib/blob/json-store";
+import { getPublishedDocument } from "@/services/content";
 import styles from "./page.module.css";
 
 type Props = { params: Promise<{ id: string }> };
@@ -17,10 +17,10 @@ type Props = { params: Promise<{ id: string }> };
 export const metadata: Metadata = { title: "Award 편집" };
 
 // /admin/award/[id] = the public detail (same component) with editing composed around it.
-// Reads the latest awards.json; every editor saves against this version.
+// Reads the cached latest awards.json; every editor saves against this version.
 export default async function AdminAwardDetailPage({ params }: Props) {
   const { id } = await params;
-  const document = (await readDocument("awards"))?.document;
+  const document = await getPublishedDocument("awards");
   const award = document?.items.find((item) => item.id === id);
   const version = document?.version ?? 0;
 

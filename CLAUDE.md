@@ -896,7 +896,7 @@ Authorization is checked on the server: `src/proxy.ts` (first gate, cookie prese
 
 ### Sessions
 - Stateless HMAC-signed cookie (`SESSION_SECRET`, Vercel env, never editable in the admin UI): `{ sub, exp (8 h), epoch }`. HttpOnly, Secure (production), SameSite=Strict, no "keep me signed in".
-- `requireAdmin()` checks signature, expiry **and** that the token's epoch equals the account's current `sessionEpoch` (read from a server-side cache tagged `auth:admin`, 60 s max age). Any account change invalidates all sessions at once; a CLI reset takes effect within ~1 minute.
+- `requireAdmin()` checks signature, expiry **and** that the token's epoch equals the account's current `sessionEpoch` (read from a server-side cache tagged `auth:admin`, 10 min max age — each refresh is a billed Blob `list()`). Any account change in `/admin/account` invalidates all sessions at once (the tag is refreshed immediately); a CLI reset takes effect within ~10 minutes.
 - Login failure: ~1 s delay and one generic message for wrong ID or password. No lockout/IP blocking (no DB).
 
 ---
@@ -947,7 +947,8 @@ Rules (implemented in `json-store.ts` — do not bypass it):
 3. **Save** = create `data/<key>/v{n+1}.json` with `allowOverwrite: false`, only if the latest is still `n`. If two admins save from the same version, only one create succeeds; the other gets the conflict message. No last-write-wins.
 4. **Retention**: the newest `DATA_HISTORY_LIMIT` (10) versions are kept; older ones are deleted after each save.
 5. **Rollback** = `restoreDocumentVersion()`: save an older kept version's content as a new version (history is never rewritten).
-6. **Reads**: public pages use `getPublishedDocument()` (Next data cache, tag `data:<key>`); admin code reads `json-store` directly (always latest). After a save call `refreshContent(key)` in a Server Action or `expireContent(key)` in a Route Handler.
+6. **Reads**: public AND admin pages use `getPublishedDocument()` (Next data cache, tag `data:<key>`, plus a per-request React memo); admin Server Actions use `readCachedDocument()` (data cache only). Pages therefore never call the Blob API on a cache hit. After a save call `refreshContent(key)` in a Server Action or `expireContent(key)` in a Route Handler — the next read (admin or public) sees the new version. Conflict safety does not depend on the cache: `saveDocument()` lists the versions itself and `put(allowOverwrite:false)` guards the race. Data written by scripts appears only after the next admin save of that document.
+   **Blob budget (Hobby: 2,000 advanced ops/month — `list`/`put`/`copy`; exceeded once on 2026-10-06 and the team was paused):** a save ≈ 1 `list` + 1 `put` + 1 `list` on the refreshed read; an image upload = 1 `put`; an admin page view = 0 on a cache hit; the session epoch = 1 `list` per 10 min of admin use. Do not run large automated E2E/QA loops or repeated cold builds against the real store.
 7. Missing documents are created from `src/config/defaults.ts` via `ensureDocument()`.
 8. **Version / pathname rules (confirmed):**
    - Never reuse a version number.

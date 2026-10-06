@@ -1,13 +1,15 @@
 import "server-only";
 import type { SaveOutcome } from "@/components/admin/edit/InlineTextEditor";
 import { DEFAULT_CONTENT } from "@/config/defaults";
-import { readDocument, saveDocument, VERSION_CONFLICT_MESSAGE } from "@/lib/blob/json-store";
-import { refreshContent } from "@/services/content";
+import { saveDocument, VERSION_CONFLICT_MESSAGE } from "@/lib/blob/json-store";
+import { readCachedDocument, refreshContent } from "@/services/content";
 import type { Award, HomeContent, Member, Professor, Project, Settings } from "@/types/content";
 
 // Read-modify-save for admin Server Actions (call requireAdmin() and validate input first).
-// The save only succeeds if the stored version is still the one the editor was opened with;
-// otherwise the admin gets the conflict message and nothing is written.
+// The current content comes from the cached latest version (no Blob list); saveDocument() then
+// lists the versions once and only writes if the stored latest is still the version the editor
+// was opened with (put with allowOverwrite:false guards the race). Otherwise the admin gets
+// the conflict message and nothing is written.
 
 const CONFLICT: SaveOutcome = { ok: false, message: VERSION_CONFLICT_MESSAGE };
 
@@ -18,9 +20,9 @@ const isError = <T,>(value: T | { error: string }): value is { error: string } =
   typeof value === "object" && value !== null && "error" in value;
 
 export async function updateHome(expectedVersion: number, update: Update<HomeContent>): Promise<SaveOutcome> {
-  const current = await readDocument("home");
-  if ((current?.document.version ?? 0) !== expectedVersion) return CONFLICT;
-  const next = update(current?.document.data ?? DEFAULT_CONTENT.home.data);
+  const current = await readCachedDocument("home");
+  if ((current?.version ?? 0) !== expectedVersion) return CONFLICT;
+  const next = update(current?.data ?? DEFAULT_CONTENT.home.data);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("home", expectedVersion, { data: next });
   if (!result.ok) return { ok: false, message: result.message };
@@ -29,9 +31,9 @@ export async function updateHome(expectedVersion: number, update: Update<HomeCon
 }
 
 export async function updateSettings(expectedVersion: number, update: Update<Settings>): Promise<SaveOutcome> {
-  const current = await readDocument("settings");
-  if ((current?.document.version ?? 0) !== expectedVersion) return CONFLICT;
-  const next = update(current?.document.data ?? DEFAULT_CONTENT.settings.data);
+  const current = await readCachedDocument("settings");
+  if ((current?.version ?? 0) !== expectedVersion) return CONFLICT;
+  const next = update(current?.data ?? DEFAULT_CONTENT.settings.data);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("settings", expectedVersion, { data: next });
   if (!result.ok) return { ok: false, message: result.message };
@@ -40,9 +42,9 @@ export async function updateSettings(expectedVersion: number, update: Update<Set
 }
 
 export async function updateAwards(expectedVersion: number, update: Update<Award[]>): Promise<SaveOutcome> {
-  const current = await readDocument("awards");
-  if ((current?.document.version ?? 0) !== expectedVersion) return CONFLICT;
-  const next = update(current?.document.items ?? []);
+  const current = await readCachedDocument("awards");
+  if ((current?.version ?? 0) !== expectedVersion) return CONFLICT;
+  const next = update(current?.items ?? []);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("awards", expectedVersion, { items: next });
   if (!result.ok) return { ok: false, message: result.message };
@@ -51,9 +53,9 @@ export async function updateAwards(expectedVersion: number, update: Update<Award
 }
 
 export async function updateProjects(expectedVersion: number, update: Update<Project[]>): Promise<SaveOutcome> {
-  const current = await readDocument("projects");
-  if ((current?.document.version ?? 0) !== expectedVersion) return CONFLICT;
-  const next = update(current?.document.items ?? []);
+  const current = await readCachedDocument("projects");
+  if ((current?.version ?? 0) !== expectedVersion) return CONFLICT;
+  const next = update(current?.items ?? []);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("projects", expectedVersion, { items: next });
   if (!result.ok) return { ok: false, message: result.message };
@@ -62,9 +64,9 @@ export async function updateProjects(expectedVersion: number, update: Update<Pro
 }
 
 export async function updateProfessor(expectedVersion: number, update: Update<Professor>): Promise<SaveOutcome> {
-  const current = await readDocument("professor");
-  if ((current?.document.version ?? 0) !== expectedVersion) return CONFLICT;
-  const next = update(current?.document.data ?? DEFAULT_CONTENT.professor.data);
+  const current = await readCachedDocument("professor");
+  if ((current?.version ?? 0) !== expectedVersion) return CONFLICT;
+  const next = update(current?.data ?? DEFAULT_CONTENT.professor.data);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("professor", expectedVersion, { data: next });
   if (!result.ok) return { ok: false, message: result.message };
@@ -73,9 +75,9 @@ export async function updateProfessor(expectedVersion: number, update: Update<Pr
 }
 
 export async function updateMembers(expectedVersion: number, update: Update<Member[]>): Promise<SaveOutcome> {
-  const current = await readDocument("members");
-  if ((current?.document.version ?? 0) !== expectedVersion) return CONFLICT;
-  const next = update(current?.document.items ?? []);
+  const current = await readCachedDocument("members");
+  if ((current?.version ?? 0) !== expectedVersion) return CONFLICT;
+  const next = update(current?.items ?? []);
   if (isError(next)) return { ok: false, message: next.error };
   const result = await saveDocument("members", expectedVersion, { items: next });
   if (!result.ok) return { ok: false, message: result.message };

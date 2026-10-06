@@ -12,7 +12,7 @@ import HomeMain from "@/components/public/home/HomeMain";
 import ResearchFieldGrid from "@/components/public/home/ResearchFieldGrid";
 import WhySection from "@/components/public/home/WhySection";
 import { DEFAULT_CONTENT } from "@/config/defaults";
-import { readDocument } from "@/lib/blob/json-store";
+import { getPublishedDocument } from "@/services/content";
 import { sortAwardsNewestFirst } from "@/services/awards";
 import { orderHomeContent } from "@/services/home";
 import styles from "./page.module.css";
@@ -21,19 +21,19 @@ export const metadata: Metadata = { title: "Home 편집" };
 
 // /admin = the public Home (same section components) with editing composed around it.
 // The wrapper switches off the Home scroll motion (ani3): editing always sees the final layout.
-// Reads the latest stored versions, not the public cache; each editor saves against the
-// version shown here (a newer save by someone else is reported as a conflict).
+// Reads the cached latest versions (refreshed by every admin save); each editor saves against
+// the version shown here (a newer save by someone else is reported as a conflict).
 export default async function AdminHomePage() {
   const [homeDoc, awardsDoc, settingsDoc] = await Promise.all([
-    readDocument("home"),
-    readDocument("awards"),
-    readDocument("settings"),
+    getPublishedDocument("home"),
+    getPublishedDocument("awards"),
+    getPublishedDocument("settings"),
   ]);
-  const home = orderHomeContent(homeDoc?.document.data ?? DEFAULT_CONTENT.home.data);
-  const homeVersion = homeDoc?.document.version ?? 0;
-  const awards = sortAwardsNewestFirst(awardsDoc?.document.items ?? []);
-  const contact = (settingsDoc?.document.data ?? DEFAULT_CONTENT.settings.data).contact;
-  const settingsVersion = settingsDoc?.document.version ?? 0;
+  const home = orderHomeContent(homeDoc?.data ?? DEFAULT_CONTENT.home.data);
+  const homeVersion = homeDoc?.version ?? 0;
+  const awards = sortAwardsNewestFirst(awardsDoc?.items ?? []);
+  const contact = (settingsDoc?.data ?? DEFAULT_CONTENT.settings.data).contact;
+  const settingsVersion = settingsDoc?.version ?? 0;
 
   return (
     <div className={styles.staticMotion}>
@@ -81,7 +81,7 @@ export default async function AdminHomePage() {
             </HomeVisualReplace>
           )}
         />
-        <AdminAwardSection awards={awards} version={awardsDoc?.document.version ?? 0} />
+        <AdminAwardSection awards={awards} version={awardsDoc?.version ?? 0} />
         <ContactSection
           contact={contact}
           renderDetails={(details) => (

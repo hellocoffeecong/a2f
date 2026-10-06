@@ -15,7 +15,7 @@ import TeamIntro from "@/components/public/team/TeamIntro";
 import TeamPage from "@/components/public/team/TeamPage";
 import { DEFAULT_CONTENT } from "@/config/defaults";
 import { PROFESSOR_SECTIONS } from "@/config/team";
-import { readDocument } from "@/lib/blob/json-store";
+import { getPublishedDocument } from "@/services/content";
 import type { Member, MemberType } from "@/types/content";
 import styles from "./page.module.css";
 
@@ -25,14 +25,14 @@ const byType = (items: Member[], type: MemberType) =>
   items.filter((item) => item.type === type).toSorted((a, b) => a.order - b.order);
 
 // /admin/team = the public Team page (same components) with editing composed in. Reads the
-// latest professor.json / members.json, not the public cache. Professor photos do not rotate
+// cached latest professor.json / members.json (refreshed by every save). Professor photos do not rotate
 // here, so the photo being edited stays in place.
 export default async function AdminTeamPage() {
-  const [professorDoc, membersDoc] = await Promise.all([readDocument("professor"), readDocument("members")]);
-  const professor = professorDoc?.document.data ?? DEFAULT_CONTENT.professor.data;
-  const professorVersion = professorDoc?.document.version ?? 0;
-  const members = membersDoc?.document.items ?? [];
-  const membersVersion = membersDoc?.document.version ?? 0;
+  const [professorDoc, membersDoc] = await Promise.all([getPublishedDocument("professor"), getPublishedDocument("members")]);
+  const professor = professorDoc?.data ?? DEFAULT_CONTENT.professor.data;
+  const professorVersion = professorDoc?.version ?? 0;
+  const members = membersDoc?.items ?? [];
+  const membersVersion = membersDoc?.version ?? 0;
   const base = { professor, version: professorVersion };
 
   return (
